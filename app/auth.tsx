@@ -1,14 +1,19 @@
 import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
-import { colors, spacing } from "@/constants/theme";
-import { configureGoogleClient, useAuth } from "@/hooks/useAuth";
-import { getConfigHealth, getConfigIssues, getRuntimeConfig } from "@/lib/runtimeConfig";
-import { supabase } from "@/lib/supabase";
-import * as Linking from "expo-linking";
+import { colors, spacing, typography } from "@/constants/theme";
+import { useAuth } from "@/hooks/useAuth";
+import * as Haptics from "expo-haptics";
 import { Redirect } from "expo-router";
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function AuthScreen() {
   const { isAuthenticated, loading, signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail } =
@@ -18,242 +23,220 @@ export default function AuthScreen() {
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [healthMessage, setHealthMessage] = useState<string | null>(null);
-  const [healthLoading, setHealthLoading] = useState(false);
-
-  const runtimeConfig = getRuntimeConfig();
-  const checks = getConfigHealth();
-  const configIssues = getConfigIssues();
-
-  useEffect(() => {
-    const webClientId = runtimeConfig.googleWebClientId;
-    if (webClientId) {
-      configureGoogleClient(webClientId);
-    }
-  }, [runtimeConfig.googleWebClientId]);
 
   if (!loading && isAuthenticated) {
     return <Redirect href="/(tabs)" />;
   }
 
-  const submitEmail = async () => {
+  const handleEmailAuth = async () => {
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
-      if (authMode === "signup") {
-        await signUpWithEmail(email.trim(), password);
-      } else {
+      if (authMode === "login") {
         await signInWithEmail(email.trim(), password);
+      } else {
+        await signUpWithEmail(email.trim(), password);
       }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const submitApple = async () => {
-    setSubmitting(true);
+  const handleSocial = async (method: "apple" | "google") => {
     setError(null);
     try {
-      await signInWithApple();
+      if (method === "apple") await signInWithApple();
+      else await signInWithGoogle();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Apple sign-in failed.";
-      if (message.includes("Provider") && message.includes("is not enabled")) {
-        setError("Apple Sign-In is not enabled in Supabase Auth providers yet.");
-      } else {
-        setError(message);
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const submitGoogle = async () => {
-    setSubmitting(true);
-    setError(null);
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const runHealthCheck = async () => {
-    setHealthLoading(true);
-    setHealthMessage(null);
-    try {
-      const sessionResult = await supabase.auth.getSession();
-      if (sessionResult.error) {
-        throw sessionResult.error;
-      }
-
-      const redirectTo = Linking.createURL("/auth");
-      const googleResult = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
-      });
-
-      if (googleResult.error) {
-        throw googleResult.error;
-      }
-
-      if (!googleResult.data?.url) {
-        throw new Error("Google OAuth URL did not generate.");
-      }
-
-      setHealthMessage("Config health check passed. Supabase session bootstrap + Google OAuth URL generation both succeeded.");
-    } catch (err) {
-      setHealthMessage(err instanceof Error ? `Health check failed: ${err.message}` : "Health check failed.");
-    } finally {
-      setHealthLoading(false);
+      setError(err instanceof Error ? err.message : `${method} sign-in failed.`);
     }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <GHText variant="title">Create Account</GHText>
-        <GHText tone="secondary">Join Gas Hacks Pro</GHText>
-      </View>
-
-      <GHCard style={styles.card}>
-        <GHButton
-          label="Continue with Apple"
-          variant="secondary"
-          onPress={() => void submitApple()}
-          loading={submitting}
-        />
-        <GHButton
-          label="Continue with Google"
-          variant="secondary"
-          onPress={() => void submitGoogle()}
-          loading={submitting}
-        />
-
-        <View style={styles.dividerRow}>
-          <View style={styles.divider} />
-          <GHText tone="muted">OR</GHText>
-          <View style={styles.divider} />
+    <KeyboardAvoidingView
+      style={styles.flex}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Brand */}
+        <View style={styles.brand}>
+          <GHText style={styles.logo}>⛽</GHText>
+          <GHText variant="title" tone="accent">
+            Gas Hacks
+          </GHText>
+          <GHText tone="secondary">
+            Premium ethanol blend calculator
+          </GHText>
         </View>
 
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor={colors.text.muted}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={colors.text.muted}
-          secureTextEntry
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-        />
-        {error ? <GHText tone="secondary">{error}</GHText> : null}
-        <GHButton
-          label={authMode === "signup" ? "Sign up with Email" : "Log in with Email"}
-          onPress={() => void submitEmail()}
-          loading={submitting}
-        />
-        <GHButton
-          label={authMode === "signup" ? "Already have an account? Log in" : "Need an account? Sign up"}
-          variant="ghost"
-          onPress={() => setAuthMode(prev => (prev === "signup" ? "login" : "signup"))}
-        />
-      </GHCard>
+        {/* Social Auth */}
+        <View style={styles.socialRow}>
+          <GHButton
+            label="Continue with Apple"
+            variant="secondary"
+            onPress={() => void handleSocial("apple")}
+            style={styles.socialBtn}
+          />
+          <GHButton
+            label="Continue with Google"
+            variant="secondary"
+            onPress={() => void handleSocial("google")}
+            style={styles.socialBtn}
+          />
+        </View>
 
-      <GHCard style={styles.card}>
-        <GHText variant="subtitle">Config Health</GHText>
-        <CheckItem label="Supabase URL present" ok={checks.supabaseUrlPresent} />
-        <CheckItem label="Supabase URL format valid" ok={checks.supabaseUrlLooksValid} />
-        <CheckItem label="Supabase key present" ok={checks.supabaseAnonKeyPresent} />
-        <CheckItem label="Supabase key format valid" ok={checks.supabaseAnonKeyLooksValid} />
-        <CheckItem label="Google client ID present" ok={checks.googleClientIdPresent} />
-        <CheckItem label="Google client ID format valid" ok={checks.googleClientIdLooksValid} />
-        <CheckItem label="Runtime config complete" ok={checks.ok} />
-        <GHButton
-          label="Run Runtime Health Check"
-          variant="secondary"
-          onPress={() => void runHealthCheck()}
-          loading={healthLoading}
-        />
-        {healthMessage ? <GHText tone="secondary">{healthMessage}</GHText> : null}
-        {configIssues.length > 0 ? (
-          <View style={styles.issuesList}>
-            {configIssues.map((issue) => (
-              <GHText key={issue} tone="secondary">
-                - {issue}
-              </GHText>
-            ))}
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <GHText tone="muted" variant="caption">
+            or
+          </GHText>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Email Auth */}
+        <GHCard style={styles.card}>
+          <GHText variant="subtitle">
+            {authMode === "login" ? "Sign In" : "Create Account"}
+          </GHText>
+
+          <View style={styles.field}>
+            <GHText tone="secondary" variant="caption" style={styles.fieldLabel}>
+              EMAIL
+            </GHText>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor={colors.text.muted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.input}
+            />
           </View>
-        ) : null}
-      </GHCard>
-    </ScrollView>
-  );
-}
 
-function CheckItem({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <View style={styles.checkRow}>
-      <GHText tone={ok ? "accent" : "secondary"}>{ok ? "PASS" : "FAIL"}</GHText>
-      <GHText tone="secondary">{label}</GHText>
-    </View>
+          <View style={styles.field}>
+            <GHText tone="secondary" variant="caption" style={styles.fieldLabel}>
+              PASSWORD
+            </GHText>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor={colors.text.muted}
+              secureTextEntry
+              style={styles.input}
+            />
+          </View>
+
+          {error && (
+            <GHText style={styles.errorText}>{error}</GHText>
+          )}
+
+          <GHButton
+            label={authMode === "login" ? "Sign In" : "Create Account"}
+            onPress={() => void handleEmailAuth()}
+            loading={submitting}
+          />
+
+          <GHButton
+            label={
+              authMode === "login"
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"
+            }
+            variant="ghost"
+            onPress={() => {
+              setAuthMode(authMode === "login" ? "signup" : "login");
+              setError(null);
+            }}
+          />
+        </GHCard>
+
+        <GHText tone="muted" variant="caption" style={styles.terms}>
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </GHText>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  content: {
+  container: {
     padding: spacing.lg,
-    gap: spacing.lg,
-    paddingBottom: spacing["2xl"],
+    paddingTop: 80,
+    gap: spacing.md,
   },
-  header: {
+  brand: {
+    alignItems: "center",
     gap: spacing.xs,
-    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  logo: {
+    fontSize: 64,
+  },
+  socialRow: {
+    gap: spacing.sm,
+  },
+  socialBtn: {},
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.glass.border,
   },
   card: {
-    gap: spacing.sm,
+    gap: spacing.md,
+  },
+  field: {
+    gap: 4,
+  },
+  fieldLabel: {
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    fontSize: 10,
+    fontFamily: typography.fontFamily.medium,
   },
   input: {
     borderWidth: 1,
     borderColor: colors.glass.border,
     backgroundColor: colors.background.tertiary,
     color: colors.text.primary,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
   },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginVertical: spacing.xs,
+  errorText: {
+    color: colors.status.error,
+    textAlign: "center",
   },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.glass.border,
-  },
-  checkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  issuesList: {
-    gap: spacing.xs,
+  terms: {
+    textAlign: "center",
+    marginTop: spacing.sm,
   },
 });

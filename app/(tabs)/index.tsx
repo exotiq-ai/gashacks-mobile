@@ -1,78 +1,175 @@
+import { FuelGauge } from "@/components/ui/FuelGauge";
 import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { TelemetryDial } from "@/components/ui/TelemetryDial";
-import { colors, spacing } from "@/constants/theme";
+import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
-import { Redirect } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { fetchFillLogs, type FillLog } from "@/lib/data";
+import { useGarageStore } from "@/lib/store";
+import { Redirect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function HubScreen() {
   const { isAuthenticated, loading, signOut, user } = useAuth();
   const { isPro } = useEntitlements();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { getActiveVehicle } = useGarageStore();
+  const activeVehicle = getActiveVehicle();
+  const [lastLog, setLastLog] = useState<FillLog | null>(null);
+  const [logCount, setLogCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      fetchFillLogs(user.id).then((logs) => {
+        setLogCount(logs.length);
+        setLastLog(logs[0] ?? null);
+      }).catch(() => {});
+    }, [user?.id]),
+  );
 
   if (!loading && !isAuthenticated) {
     return <Redirect href="/auth" />;
   }
 
+  const lastEthanol = lastLog ? lastLog.resulting_ethanol_mix / 10 : 0;
+  const lastOctane = lastLog ? lastLog.resulting_octane / 10 : 0;
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 90 }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
       <View style={styles.headerRow}>
         <View>
           <GHText variant="title" tone="accent">
             The Hub
           </GHText>
-          <GHText tone="secondary">Performance dashboard</GHText>
+          <GHText tone="secondary">
+            {activeVehicle
+              ? `${activeVehicle.year ?? ""} ${activeVehicle.make} ${activeVehicle.model}`
+              : "No vehicle selected"}
+          </GHText>
         </View>
         <View style={[styles.planBadge, isPro ? styles.planBadgePro : styles.planBadgeFree]}>
-          <GHText tone={isPro ? "accent" : "secondary"}>{isPro ? "PRO" : "FREE"}</GHText>
-        </View>
-      </View>
-
-      <GHCard style={styles.card}>
-        <GHText variant="subtitle">Fuel Level</GHText>
-        <GHText style={styles.metric}>65%</GHText>
-        <GHText tone="secondary">Est. range 184 mi | Full in 12.4 gal</GHText>
-      </GHCard>
-
-      <View style={styles.grid}>
-        <View style={styles.gridItem}>
-          <TelemetryDial label="Ethanol" value="E82" caption="+3.2%" />
-        </View>
-        <View style={styles.gridItem}>
-          <TelemetryDial label="Atmosphere" value="1240 DA" caption="78F / 36% RH" />
-        </View>
-      </View>
-
-      <GHCard style={styles.card}>
-        <GHText variant="subtitle">Account</GHText>
-        <GHText tone="secondary">{user?.email ?? "Signed in"}</GHText>
-        {!isPro ? (
-          <GHText tone="secondary">
-            Upgrade to Pro for unlimited garage slots, full log history, and premium widgets.
+          <GHText tone={isPro ? "accent" : "secondary"} style={styles.planText}>
+            {isPro ? "PRO" : "FREE"}
           </GHText>
-        ) : (
-          <GHText tone="secondary">Pro unlocked: unlimited access enabled.</GHText>
-        )}
-        <GHButton label="Sign out" variant="secondary" onPress={signOut} style={styles.action} />
-      </GHCard>
-    </View>
+        </View>
+      </View>
+
+      {/* Quick Stats */}
+      <Animated.View entering={FadeInDown.duration(300)}>
+        <View style={styles.grid}>
+          <View style={styles.gridItem}>
+            <TelemetryDial
+              label="Last Blend"
+              value={lastLog ? `E${lastEthanol.toFixed(0)}` : "—"}
+              caption={lastLog ? `${lastOctane.toFixed(1)} oct` : "No logs yet"}
+            />
+          </View>
+          <View style={styles.gridItem}>
+            <TelemetryDial
+              label="Fill Logs"
+              value={String(logCount)}
+              caption={isPro ? "Unlimited" : `${Math.min(logCount, 10)}/10 free`}
+            />
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Vehicle Card */}
+      <Animated.View entering={FadeInDown.duration(300).delay(100)}>
+        <GHCard style={styles.card}>
+          <GHText variant="subtitle">
+            {activeVehicle ? "Active Vehicle" : "Get Started"}
+          </GHText>
+          {activeVehicle ? (
+            <>
+              <GHText tone="secondary">
+                {activeVehicle.year ?? ""} {activeVehicle.make} {activeVehicle.model}
+                {activeVehicle.trim ? ` ${activeVehicle.trim}` : ""}
+              </GHText>
+              <GHText tone="muted" variant="caption">
+                {activeVehicle.tankCapacityGallons} gal tank
+                {activeVehicle.currentTune ? ` · ${activeVehicle.currentTune}` : ""}
+              </GHText>
+            </>
+          ) : (
+            <GHText tone="secondary">
+              Add a vehicle in the Garage tab to get personalized calculations.
+            </GHText>
+          )}
+          <GHButton
+            label={activeVehicle ? "Go to Garage" : "Add Vehicle"}
+            variant="secondary"
+            onPress={() => router.push("/(tabs)/garage")}
+            style={styles.action}
+          />
+        </GHCard>
+      </Animated.View>
+
+      {/* Quick Actions */}
+      <Animated.View entering={FadeInDown.duration(300).delay(200)}>
+        <GHCard style={styles.card}>
+          <GHText variant="subtitle">Quick Actions</GHText>
+          <GHButton
+            label="🧮  Open Calculator"
+            onPress={() => router.push("/(tabs)/calculator")}
+          />
+          <GHButton
+            label="📋  View Fill Logs"
+            variant="secondary"
+            onPress={() => router.push("/(tabs)/logs")}
+          />
+        </GHCard>
+      </Animated.View>
+
+      {/* Account */}
+      <Animated.View entering={FadeInDown.duration(300).delay(300)}>
+        <GHCard style={styles.card}>
+          <GHText variant="subtitle">Account</GHText>
+          <GHText tone="secondary">{user?.email ?? "Signed in"}</GHText>
+          {!isPro && (
+            <GHText tone="muted" variant="caption">
+              Upgrade to Pro for unlimited garage slots, full log history, and
+              premium widgets.
+            </GHText>
+          )}
+          <GHButton
+            label="Sign out"
+            variant="ghost"
+            onPress={signOut}
+            style={styles.action}
+          />
+        </GHCard>
+      </Animated.View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
     backgroundColor: colors.background.primary,
+  },
+  container: {
     padding: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: spacing.xs,
   },
   planBadge: {
     borderWidth: 1,
@@ -88,23 +185,22 @@ const styles = StyleSheet.create({
     borderColor: "rgba(213, 254, 124, 0.35)",
     backgroundColor: "rgba(213, 254, 124, 0.08)",
   },
-  card: {
-    marginTop: spacing.md,
-    gap: spacing.sm,
+  planText: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 12,
+    letterSpacing: 1,
   },
   grid: {
-    marginTop: spacing.md,
     flexDirection: "row",
     gap: spacing.sm,
   },
   gridItem: {
     flex: 1,
   },
-  metric: {
-    fontSize: 42,
-    lineHeight: 48,
+  card: {
+    gap: spacing.sm,
   },
   action: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
 });

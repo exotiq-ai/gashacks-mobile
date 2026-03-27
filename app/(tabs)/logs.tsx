@@ -1,19 +1,38 @@
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
-import { colors, spacing } from "@/constants/theme";
+import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
 import { applyLogVisibilityLimit } from "@/lib/entitlements";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TargetFilter = "all" | "e30" | "e50" | "e85";
+
+const FILTERS: { label: string; value: TargetFilter }[] = [
+  { label: "All", value: "all" },
+  { label: "E30", value: "e30" },
+  { label: "E50", value: "e50" },
+  { label: "E85", value: "e85" },
+];
+
+function filterRange(filter: TargetFilter): [number, number] {
+  switch (filter) {
+    case "e30": return [200, 400];
+    case "e50": return [400, 700];
+    case "e85": return [700, 1000];
+    default: return [0, 1000];
+  }
+}
 
 export default function LogsScreen() {
   const { user } = useAuth();
   const { isPro, entitlements } = useEntitlements();
+  const insets = useSafeAreaInsets();
   const [logs, setLogs] = useState<FillLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,96 +50,147 @@ export default function LogsScreen() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useFocusEffect(
     useCallback(() => {
       void loadLogs();
-    }, [loadLogs])
+    }, [loadLogs]),
   );
 
-  const { filteredLogs, byTargetCount } = useMemo(() => {
-    const byTarget = logs.filter((item) => {
-      if (filter === "all") return true;
-      const target = Math.round(item.target_ethanol_mix / 10);
-      if (filter === "e30") return target >= 25 && target < 40;
-      if (filter === "e50") return target >= 40 && target < 70;
-      if (filter === "e85") return target >= 70;
-      return true;
+  const visible = useMemo(() => {
+    const [lo, hi] = filterRange(filter);
+    const filtered = logs.filter(
+      (l) => l.target_ethanol_mix >= lo && l.target_ethanol_mix <= hi,
+    );
+    return applyLogVisibilityLimit(filtered, entitlements);
+  }, [logs, filter, entitlements]);
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
     });
+  };
 
-    return {
-      byTargetCount: byTarget.length,
-      filteredLogs: applyLogVisibilityLimit(byTarget, entitlements),
-    };
-  }, [entitlements, filter, logs]);
+  const renderLog = ({ item }: { item: FillLog }) => {
+    const eMix = item.resulting_ethanol_mix / 10;
+    const octane = item.resulting_octane / 10;
+    const e85Gal = item.e85_gallons ?? 0;
+    const pumpGal = item.pump_gas_gallons ?? 0;
 
-  const truncatedByPlan = !isPro && filteredLogs.length < byTargetCount;
+    return (
+      <GHCard style={styles.logCard}>
+        <View style={styles.logHeader}>
+          <GHText tone="accent" style={styles.logBlend}>
+            E{eMix.toFixed(0)}
+          </GHText>
+          <GHText tone="muted" variant="caption">
+            {formatDate(item.created_at)}
+          </GHText>
+        </View>
+        <View style={styles.logStats}>
+          <View style={styles.logStat}>
+            <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
+              OCTANE
+            </GHText>
+            <GHText tone="secondary">{octane.toFixed(1)}</GHText>
+          </View>
+          <View style={styles.logDivider} />
+          <View style={styles.logStat}>
+            <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
+              E85
+            </GHText>
+            <GHText tone="secondary">{e85Gal.toFixed(1)}g</GHText>
+          </View>
+          <View style={styles.logDivider} />
+          <View style={styles.logStat}>
+            <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
+              PUMP
+            </GHText>
+            <GHText tone="secondary">{pumpGal.toFixed(1)}g</GHText>
+          </View>
+        </View>
+        {item.station_name && (
+          <GHText tone="muted" variant="caption">
+            📍 {item.station_name}
+          </GHText>
+        )}
+      </GHCard>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <GHText variant="title">Logs</GHText>
-      <GHText tone="secondary">Blend history synchronized to Supabase.</GHText>
-      <View style={styles.filterRow}>
-        <FilterChip label="All" active={filter === "all"} onPress={() => setFilter("all")} />
-        <FilterChip label="E30" active={filter === "e30"} onPress={() => setFilter("e30")} />
-        <FilterChip label="E50" active={filter === "e50"} onPress={() => setFilter("e50")} />
-        <FilterChip label="E85+" active={filter === "e85"} onPress={() => setFilter("e85")} />
+      <View style={styles.header}>
+        <GHText variant="title" tone="accent">
+          Fill Logs
+        </GHText>
+        <GHText tone="secondary">
+          {logs.length} fill{logs.length !== 1 ? "s" : ""} recorded
+        </GHText>
       </View>
-      {error ? <GHText style={styles.errorText}>{error}</GHText> : null}
-      {truncatedByPlan ? (
-        <GHCard style={styles.card}>
-          <GHText tone="secondary">
-            Free plan shows latest {entitlements.maxLogsVisible} logs. Upgrade to Pro for full history.
-          </GHText>
-        </GHCard>
-      ) : null}
-      <FlatList
-        data={filteredLogs}
-        contentContainerStyle={styles.list}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <GHCard style={styles.card}>
-            <GHText tone="secondary">
-              {loading ? "Loading logs..." : "No logs yet. Save a blend from Mission Control."}
-            </GHText>
-          </GHCard>
-        }
-        renderItem={({ item }) => (
-          <GHCard style={styles.card}>
-            <GHText variant="subtitle">E{Math.round(item.target_ethanol_mix / 10)} Target</GHText>
-            <GHText tone="secondary">
-              {Number(item.e85_gallons ?? 0).toFixed(2)} gal E85 +{" "}
-              {Number(item.pump_gas_gallons ?? 0).toFixed(2)} gal pump gas
-            </GHText>
-            <GHText tone="secondary">
-              Result E{(item.resulting_ethanol_mix / 10).toFixed(1)} | Oct{" "}
-              {(item.resulting_octane / 10).toFixed(1)} |{" "}
-              {new Date(item.created_at).toLocaleDateString()}
-            </GHText>
-          </GHCard>
-        )}
-      />
-    </View>
-  );
-}
 
-function FilterChip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.filterChip, active ? styles.filterChipActive : null]}
-    >
-      <GHText tone={active ? "accent" : "secondary"}>{label}</GHText>
-    </Pressable>
+      {/* Filter pills */}
+      <View style={styles.filterRow}>
+        {FILTERS.map((f) => {
+          const isActive = filter === f.value;
+          return (
+            <Pressable
+              key={f.value}
+              style={[styles.filterPill, isActive && styles.filterPillActive]}
+              onPress={() => {
+                setFilter(f.value);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+            >
+              <GHText
+                tone={isActive ? "accent" : "secondary"}
+                style={styles.filterText}
+              >
+                {f.label}
+              </GHText>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {error && <GHText style={styles.errorText}>{error}</GHText>}
+
+      {!loading && visible.length === 0 ? (
+        <View style={styles.emptyState}>
+          <GHText style={styles.emptyIcon}>📋</GHText>
+          <GHText tone="secondary" style={styles.emptyText}>
+            {logs.length === 0
+              ? "No fills logged yet. Save a blend from the Calculator to start tracking."
+              : "No fills match this filter."}
+          </GHText>
+        </View>
+      ) : (
+        <FlatList
+          data={visible}
+          renderItem={renderLog}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            gap: spacing.sm,
+            paddingBottom: insets.bottom + 90,
+            paddingHorizontal: spacing.lg,
+          }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {!isPro && logs.length > 10 && (
+        <View style={styles.upgradeBar}>
+          <GHText tone="muted" variant="caption">
+            Showing 10 of {logs.length} logs · Upgrade to Pro for full history
+          </GHText>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -128,34 +198,92 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
-    padding: spacing.lg,
-    gap: spacing.sm,
   },
-  list: {
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    gap: spacing.xs,
   },
   filterRow: {
     flexDirection: "row",
-    gap: spacing.xs,
-    marginTop: spacing.xs,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
-  filterChip: {
-    borderRadius: 999,
+  filterPill: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 10,
+    backgroundColor: colors.background.tertiary,
     borderWidth: 1,
     borderColor: colors.glass.border,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    backgroundColor: colors.background.tertiary,
   },
-  filterChipActive: {
-    borderColor: "rgba(213, 254, 124, 0.35)",
+  filterPillActive: {
+    borderColor: colors.accent.lime,
     backgroundColor: "rgba(213, 254, 124, 0.08)",
   },
-  card: {
-    gap: spacing.xs,
+  filterText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: 13,
   },
   errorText: {
     color: colors.status.error,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  emptyIcon: {
+    fontSize: 48,
+  },
+  emptyText: {
+    textAlign: "center",
+  },
+  logCard: {
+    gap: spacing.sm,
+  },
+  logHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  logBlend: {
+    fontSize: typography.fontSize.xl,
+    fontFamily: typography.fontFamily.bold,
+  },
+  logStats: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logStat: {
+    flex: 1,
+    alignItems: "center",
+    gap: 2,
+  },
+  logStatLabel: {
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontSize: 10,
+    fontFamily: typography.fontFamily.medium,
+  },
+  logDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: colors.glass.border,
+  },
+  upgradeBar: {
+    position: "absolute",
+    bottom: 80,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background.secondary,
+    borderTopWidth: 1,
+    borderTopColor: colors.glass.border,
   },
 });

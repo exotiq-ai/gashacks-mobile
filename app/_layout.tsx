@@ -1,3 +1,5 @@
+import { SafetyDisclaimer } from "@/components/ui/SafetyDisclaimer";
+import { useFirstLaunch } from "@/hooks/useFirstLaunch";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import {
   Inter_300Light,
@@ -13,16 +15,13 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from "expo-router";
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: "(tabs)",
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -34,22 +33,28 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  const { accepted, accept } = useFirstLaunch();
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && accepted !== null) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, accepted]);
 
-  if (!loaded) {
+  if (!loaded || accepted === null) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <>
+      <SafetyDisclaimer visible={!accepted} onAccept={accept} />
+      <RootLayoutNav />
+    </>
+  );
 }
 
 function RootLayoutNav() {
