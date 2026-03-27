@@ -1,21 +1,43 @@
 import { useCallback, useEffect, useState } from "react";
 import * as SecureStore from "expo-secure-store";
 
-const KEY = "gas_hacks_disclaimer_accepted";
+const DISCLAIMER_KEY = "gas_hacks_disclaimer_accepted";
+const ONBOARDING_KEY = "gas_hacks_onboarding_complete";
 
 export function useFirstLaunch() {
-  const [accepted, setAccepted] = useState<boolean | null>(null);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean | null>(null);
+  const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    SecureStore.getItemAsync(KEY)
-      .then((val) => setAccepted(val === "true"))
-      .catch(() => setAccepted(false));
+    Promise.all([
+      SecureStore.getItemAsync(DISCLAIMER_KEY),
+      SecureStore.getItemAsync(ONBOARDING_KEY),
+    ])
+      .then(([disc, onb]) => {
+        setDisclaimerAccepted(disc === "true");
+        setOnboardingComplete(onb === "true");
+      })
+      .catch(() => {
+        setDisclaimerAccepted(false);
+        setOnboardingComplete(false);
+      });
   }, []);
 
-  const accept = useCallback(async () => {
-    await SecureStore.setItemAsync(KEY, "true");
-    setAccepted(true);
+  const acceptDisclaimer = useCallback(async () => {
+    await SecureStore.setItemAsync(DISCLAIMER_KEY, "true");
+    setDisclaimerAccepted(true);
   }, []);
 
-  return { accepted, accept };
+  const completeOnboarding = useCallback(async () => {
+    await SecureStore.setItemAsync(ONBOARDING_KEY, "true");
+    setOnboardingComplete(true);
+  }, []);
+
+  return {
+    disclaimerAccepted,
+    onboardingComplete,
+    acceptDisclaimer,
+    completeOnboarding,
+    loading: disclaimerAccepted === null || onboardingComplete === null,
+  };
 }

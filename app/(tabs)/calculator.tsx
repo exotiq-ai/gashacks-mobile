@@ -5,8 +5,10 @@ import { GHSlider } from "@/components/ui/GHSlider";
 import { GHText } from "@/components/ui/GHText";
 import { OctaneGauge } from "@/components/ui/OctaneGauge";
 import { PresetPills, type Preset } from "@/components/ui/PresetPills";
+import { ReceiptScanner, type ScannedReceipt } from "@/components/ui/ReceiptScanner";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
+import { useEntitlements } from "@/hooks/useEntitlements";
 import { calculateBlend } from "@/lib/calculator";
 import { createFillLog } from "@/lib/data";
 import { useGarageStore } from "@/lib/store";
@@ -25,6 +27,7 @@ import Animated, {
 
 export default function CalculatorScreen() {
   const { user } = useAuth();
+  const { isPro } = useEntitlements();
   const insets = useSafeAreaInsets();
   const { getActiveVehicle } = useGarageStore();
   const activeVehicle = getActiveVehicle();
@@ -37,6 +40,7 @@ export default function CalculatorScreen() {
   const [ethanolFuelPercent, setEthanolFuelPercent] = useState(85);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   useEffect(() => {
     if (!activeVehicle) return;
@@ -91,7 +95,38 @@ export default function CalculatorScreen() {
     }
   };
 
+  const handleReceiptConfirm = (data: ScannedReceipt) => {
+    // Apply receipt data to save a log entry with cost info
+    if (user && result && result.canFillToTarget) {
+      createFillLog({
+        userId: user.id,
+        vehicleId: activeVehicle?.id ?? null,
+        tankLevelBefore: Math.round(currentLevel * 10),
+        ethanolMixBefore: Math.round(currentEthanol * 10),
+        targetEthanolMix: Math.round(targetEthanol * 10),
+        resultingEthanolMix: Math.round(result.resultingMix * 10),
+        resultingOctane: Math.round(result.octaneRating * 10),
+        e85Gallons: data.gallonsE85 ?? result.ethanolToAdd,
+        pumpGasGallons: data.gallonsPump ?? result.pumpGasToAdd,
+        pumpGasOctane: 93,
+        e85ActualEthanol: Math.round(ethanolFuelPercent * 10),
+      }).then(() => {
+        setSaveMessage("Receipt logged ✓");
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }).catch(() => {
+        setSaveMessage("Failed to save receipt log.");
+      });
+    }
+  };
+
   return (
+    <>
+    <ReceiptScanner
+      visible={showReceipt}
+      onClose={() => setShowReceipt(false)}
+      onConfirm={handleReceiptConfirm}
+      isPro={isPro}
+    />
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={[
@@ -260,14 +295,20 @@ export default function CalculatorScreen() {
         </GHCard>
       </Animated.View>
 
-      {/* Save */}
+      {/* Actions */}
       <GHButton
         label={saveMessage ?? "Save Blend Configuration"}
         onPress={() => void saveBlend()}
         loading={saving}
         disabled={!user || !result.canFillToTarget}
       />
+      <GHButton
+        label="📸  Log from Receipt"
+        variant="secondary"
+        onPress={() => setShowReceipt(true)}
+      />
     </ScrollView>
+    </>
   );
 }
 

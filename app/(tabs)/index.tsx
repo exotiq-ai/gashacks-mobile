@@ -1,4 +1,4 @@
-import { FuelGauge } from "@/components/ui/FuelGauge";
+import { CostSavingsCard } from "@/components/ui/CostSavingsCard";
 import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
@@ -23,12 +23,14 @@ export default function HubScreen() {
   const { getActiveVehicle } = useGarageStore();
   const activeVehicle = getActiveVehicle();
   const [lastLog, setLastLog] = useState<FillLog | null>(null);
+  const [allLogs, setAllLogs] = useState<FillLog[]>([]);
   const [logCount, setLogCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
       fetchFillLogs(user.id).then((logs) => {
+        setAllLogs(logs);
         setLogCount(logs.length);
         setLastLog(logs[0] ?? null);
       }).catch(() => {});
@@ -134,8 +136,15 @@ export default function HubScreen() {
         </GHCard>
       </Animated.View>
 
+      {/* Cost Analytics */}
+      {allLogs.length > 0 && (
+        <Animated.View entering={FadeInDown.duration(300).delay(300)}>
+          <CostSavingsCard logs={allLogs} />
+        </Animated.View>
+      )}
+
       {/* Account */}
-      <Animated.View entering={FadeInDown.duration(300).delay(300)}>
+      <Animated.View entering={FadeInDown.duration(300).delay(400)}>
         <GHCard style={styles.card}>
           <GHText variant="subtitle">Account</GHText>
           <GHText tone="secondary">{user?.email ?? "Signed in"}</GHText>

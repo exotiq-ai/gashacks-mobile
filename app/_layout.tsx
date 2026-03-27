@@ -1,3 +1,4 @@
+import { OnboardingWalkthrough } from "@/components/ui/OnboardingWalkthrough";
 import { SafetyDisclaimer } from "@/components/ui/SafetyDisclaimer";
 import { useFirstLaunch } from "@/hooks/useFirstLaunch";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
@@ -33,26 +34,44 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  const { accepted, accept } = useFirstLaunch();
+  const {
+    disclaimerAccepted,
+    onboardingComplete,
+    acceptDisclaimer,
+    completeOnboarding,
+    loading: firstLaunchLoading,
+  } = useFirstLaunch();
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded && accepted !== null) {
+    if (loaded && !firstLaunchLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, accepted]);
+  }, [loaded, firstLaunchLoading]);
 
-  if (!loaded || accepted === null) {
+  if (!loaded || firstLaunchLoading) {
     return null;
   }
 
   return (
     <>
-      <SafetyDisclaimer visible={!accepted} onAccept={accept} />
-      <RootLayoutNav />
+      {/* Step 1: Safety disclaimer (must accept) */}
+      <SafetyDisclaimer
+        visible={!disclaimerAccepted}
+        onAccept={acceptDisclaimer}
+      />
+      {/* Step 2: Feature walkthrough (can skip) */}
+      {disclaimerAccepted && !onboardingComplete && (
+        <OnboardingWalkthrough
+          visible={true}
+          onComplete={completeOnboarding}
+        />
+      )}
+      {/* Step 3: Main app */}
+      {disclaimerAccepted && onboardingComplete && <RootLayoutNav />}
     </>
   );
 }
