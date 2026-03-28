@@ -1,12 +1,14 @@
 export const FREE_LIMITS = {
   maxVehicles: 1,
   maxLogsVisible: 10,
+  maxStationsVisible: 3,
 } as const;
 
 export type EntitlementSnapshot = {
   isPro: boolean;
   maxVehicles: number;
   maxLogsVisible: number;
+  maxStationsVisible: number;
 };
 
 export function resolveEntitlements(isPro: boolean): EntitlementSnapshot {
@@ -15,6 +17,7 @@ export function resolveEntitlements(isPro: boolean): EntitlementSnapshot {
       isPro: true,
       maxVehicles: Number.POSITIVE_INFINITY,
       maxLogsVisible: Number.POSITIVE_INFINITY,
+      maxStationsVisible: Number.POSITIVE_INFINITY,
     };
   }
 
@@ -22,6 +25,7 @@ export function resolveEntitlements(isPro: boolean): EntitlementSnapshot {
     isPro: false,
     maxVehicles: FREE_LIMITS.maxVehicles,
     maxLogsVisible: FREE_LIMITS.maxLogsVisible,
+    maxStationsVisible: FREE_LIMITS.maxStationsVisible,
   };
 }
 
