@@ -16,10 +16,15 @@ function nonEmptyOrFallback(value: string, fallback: string) {
 }
 
 const inMemoryStore = new Map<string, string>();
-const hasSecureStoreApi =
-  typeof SecureStore.getItemAsync === "function" &&
-  typeof SecureStore.setItemAsync === "function" &&
-  typeof SecureStore.deleteItemAsync === "function";
+let hasSecureStoreApi = false;
+try {
+  hasSecureStoreApi =
+    typeof SecureStore.getItemAsync === "function" &&
+    typeof SecureStore.setItemAsync === "function" &&
+    typeof SecureStore.deleteItemAsync === "function";
+} catch {
+  hasSecureStoreApi = false;
+}
 
 function getLocalStorage() {
   try {

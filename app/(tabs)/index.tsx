@@ -42,8 +42,8 @@ export default function HubScreen() {
     return <Redirect href="/auth" />;
   }
 
-  const lastEthanol = lastLog ? lastLog.resulting_ethanol_mix / 10 : 0;
-  const lastOctane = lastLog ? lastLog.resulting_octane / 10 : 0;
+  const lastEthanol = lastLog?.resulting_ethanol_mix != null ? lastLog.resulting_ethanol_mix / 10 : 0;
+  const lastOctane = lastLog?.resulting_octane != null ? lastLog.resulting_octane / 10 : 0;
 
   return (
     <ScrollView
