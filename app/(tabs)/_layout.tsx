@@ -102,6 +102,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="stations"
+        options={{
+          title: "Stations",
+          tabBarIcon: ({ color, size, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "map-marker-radius" : "map-marker-radius-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="logs"
         options={{
           title: "Logs",

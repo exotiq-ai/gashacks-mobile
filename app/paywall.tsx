@@ -2,10 +2,13 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { getOfferings, purchasePackage, restorePurchases } from "@/lib/revenuecat";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 
 type Plan = "monthly" | "annual";
 
@@ -14,25 +17,71 @@ const FEATURES = [
   { emoji: "📋", title: "Full Log History", desc: "Never lose a fill record" },
   { emoji: "📸", title: "Receipt Scanning", desc: "Auto-log from pump receipts" },
   { emoji: "📊", title: "Cost Analytics", desc: "Track savings vs premium gas" },
-  { emoji: "⭐", title: "Station Favorites", desc: "Save your go-to E85 spots" },
+  { emoji: "📍", title: "Station Finder", desc: "All nearby E85 stations" },
   { emoji: "📤", title: "Export to CSV", desc: "Download your data anytime" },
 ];
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const { refresh } = useEntitlements();
   const [plan, setPlan] = useState<Plan>("annual");
   const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+
+  useEffect(() => {
+    getOfferings().then(setOffering).catch(() => {});
+  }, []);
+
+  const getPackage = (): PurchasesPackage | null => {
+    if (!offering) return null;
+    return plan === "monthly" ? offering.monthly : offering.annual;
+  };
 
   const handlePurchase = async () => {
+    const pkg = getPackage();
     setPurchasing(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    // TODO: RevenueCat purchase flow
-    // For now, show placeholder
-    setTimeout(() => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    try {
+      const result = pkg
+        ? await purchasePackage(pkg)
+        : { success: false, isPro: false, error: "No package available" };
+
+      if (result.success && result.isPro) {
+        await refresh();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.back();
+      } else if (result.error) {
+        Alert.alert("Purchase Failed", result.error);
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } finally {
       setPurchasing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, 1500);
+    }
   };
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const result = await restorePurchases();
+      if (result.isPro) {
+        await refresh();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Restored!", "Your Pro subscription has been restored.");
+        router.back();
+      } else {
+        Alert.alert("Nothing to Restore", "No active Pro subscription found.");
+      }
+    } catch {
+      Alert.alert("Restore Failed", "Please try again later.");
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+  const monthlyPrice = offering?.monthly?.product.priceString ?? "$2.99";
+  const annualPrice = offering?.annual?.product.priceString ?? "$19.99";
 
   return (
     <>
@@ -72,11 +121,11 @@ export default function PaywallScreen() {
             style={[styles.planOption, plan === "monthly" && styles.planOptionActive]}
             onPress={() => {
               setPlan("monthly");
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
           >
             <GHText tone={plan === "monthly" ? "accent" : "secondary"} style={styles.planPrice}>
-              $4.99
+              {monthlyPrice}
             </GHText>
             <GHText tone="muted" variant="caption">
               per month
@@ -87,28 +136,33 @@ export default function PaywallScreen() {
             style={[styles.planOption, plan === "annual" && styles.planOptionActive]}
             onPress={() => {
               setPlan("annual");
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
           >
-            {plan === "annual" && (
-              <View style={styles.saveBadge}>
-                <GHText style={styles.saveBadgeText}>SAVE 50%</GHText>
-              </View>
-            )}
+            <View style={styles.saveBadge}>
+              <GHText style={styles.saveBadgeText}>SAVE 44%</GHText>
+            </View>
             <GHText tone={plan === "annual" ? "accent" : "secondary"} style={styles.planPrice}>
-              $29.99
+              {annualPrice}
             </GHText>
             <GHText tone="muted" variant="caption">
-              per year ($2.50/mo)
+              per year ($1.67/mo)
             </GHText>
           </Pressable>
         </View>
 
         {/* CTA */}
         <GHButton
-          label={purchasing ? "Processing..." : `Subscribe — ${plan === "monthly" ? "$4.99/mo" : "$29.99/yr"}`}
+          label={purchasing ? "Processing..." : `Subscribe — ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`}
           onPress={() => void handlePurchase()}
           loading={purchasing}
+        />
+
+        <GHButton
+          label={restoring ? "Restoring..." : "Restore Purchases"}
+          variant="secondary"
+          onPress={() => void handleRestore()}
+          loading={restoring}
         />
 
         <GHButton
@@ -176,6 +230,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: spacing.md,
+    paddingTop: spacing.lg,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.glass.border,

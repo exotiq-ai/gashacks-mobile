@@ -4,6 +4,7 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { restorePurchases } from "@/lib/revenuecat";
 import { supabase } from "@/lib/supabase";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
@@ -22,10 +23,30 @@ const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuth();
-  const { isPro } = useEntitlements();
+  const { isPro, refresh } = useEntitlements();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const result = await restorePurchases();
+      if (result.isPro) {
+        await refresh();
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("Restored!", "Your Pro subscription has been restored.");
+      } else {
+        Alert.alert("Nothing to Restore", "No active Pro subscription found.");
+      }
+    } catch {
+      Alert.alert("Restore Failed", "Please try again later.");
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   const handleDeleteAccount = () => {
     Alert.alert(
@@ -76,22 +97,50 @@ export default function SettingsScreen() {
           <GHText tone="secondary">Email</GHText>
           <GHText tone="primary">{user?.email ?? "—"}</GHText>
         </View>
+      </GHCard>
+
+      {/* Subscription */}
+      <GHCard style={styles.card}>
+        <GHText variant="subtitle">Subscription</GHText>
         <View style={styles.row}>
-          <GHText tone="secondary">Plan</GHText>
+          <GHText tone="secondary">Current Plan</GHText>
           <View style={[styles.planBadge, isPro ? styles.planBadgePro : styles.planBadgeFree]}>
             <GHText tone={isPro ? "accent" : "secondary"} style={styles.planText}>
               {isPro ? "PRO" : "FREE"}
             </GHText>
           </View>
         </View>
-        {!isPro && (
-          <GHButton
-            label="Upgrade to Pro"
-            onPress={() => {
-              // TODO: RevenueCat paywall
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            }}
-          />
+        {isPro ? (
+          <>
+            <GHText tone="muted" variant="caption">
+              You have full access to all Gas Hacks Pro features. Manage your subscription in your device's App Store or Play Store settings.
+            </GHText>
+            <GHButton
+              label={restoring ? "Restoring..." : "Restore Purchases"}
+              variant="secondary"
+              onPress={() => void handleRestore()}
+              loading={restoring}
+            />
+          </>
+        ) : (
+          <>
+            <GHText tone="muted" variant="caption">
+              Upgrade to Pro for unlimited vehicles, full log history, station finder, and more.
+            </GHText>
+            <GHButton
+              label="Upgrade to Pro — $2.99/mo"
+              onPress={() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push("/paywall");
+              }}
+            />
+            <GHButton
+              label={restoring ? "Restoring..." : "Restore Purchases"}
+              variant="ghost"
+              onPress={() => void handleRestore()}
+              loading={restoring}
+            />
+          </>
         )}
       </GHCard>
 

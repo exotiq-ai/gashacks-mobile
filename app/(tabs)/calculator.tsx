@@ -6,6 +6,7 @@ import { GHText } from "@/components/ui/GHText";
 import { OctaneGauge } from "@/components/ui/OctaneGauge";
 import { PresetPills, type Preset } from "@/components/ui/PresetPills";
 import { ReceiptScanner, type ScannedReceipt } from "@/components/ui/ReceiptScanner";
+import { ShareBlendCard } from "@/components/ui/ShareBlendCard";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
@@ -307,6 +308,23 @@ export default function CalculatorScreen() {
         variant="secondary"
         onPress={() => setShowReceipt(true)}
       />
+
+      {/* Share card */}
+      {result.canFillToTarget && (
+        <Animated.View entering={FadeInDown.duration(400).delay(350)}>
+          <ShareBlendCard
+            vehicleName={
+              activeVehicle
+                ? `${activeVehicle.year ?? ""} ${activeVehicle.make} ${activeVehicle.model}`.trim()
+                : undefined
+            }
+            blendPercent={result.resultingMix}
+            octane={result.octaneRating}
+            e85Gallons={result.ethanolToAdd}
+            pumpGasGallons={result.pumpGasToAdd}
+          />
+        </Animated.View>
+      )}
     </ScrollView>
     </>
   );

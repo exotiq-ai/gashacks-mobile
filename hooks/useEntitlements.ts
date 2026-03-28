@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { fetchProfileEntitlement } from "@/lib/data";
+import { checkProEntitlement } from "@/lib/revenuecat";
 import { resolveEntitlements } from "@/lib/entitlements";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -18,8 +18,8 @@ export function useEntitlements() {
     setLoading(true);
     setError(null);
     try {
-      const entitlement = await fetchProfileEntitlement(user.id);
-      setIsPro(entitlement.isPro);
+      const pro = await checkProEntitlement();
+      setIsPro(pro);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load entitlements.");
       setIsPro(false);

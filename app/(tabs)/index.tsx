@@ -1,4 +1,5 @@
 import { CostSavingsCard } from "@/components/ui/CostSavingsCard";
+import { FillAnalytics } from "@/components/ui/FillAnalytics";
 import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
@@ -141,6 +142,11 @@ export default function HubScreen() {
         <Animated.View entering={FadeInDown.duration(300).delay(300)}>
           <CostSavingsCard logs={allLogs} />
         </Animated.View>
+      )}
+
+      {/* Fill Analytics (pro) */}
+      {isPro && allLogs.length > 0 && (
+        <FillAnalytics logs={allLogs} />
       )}
 
       {/* Account */}
