@@ -23,7 +23,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const RADIUS_OPTIONS = [10, 25, 50, 100];
 
