@@ -1,15 +1,23 @@
 import { useAuth } from "@/hooks/useAuth";
 import { checkProEntitlement } from "@/lib/revenuecat";
 import { resolveEntitlements } from "@/lib/entitlements";
+import { getRuntimeConfig } from "@/lib/runtimeConfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+const runtimeConfig = getRuntimeConfig();
 
 export function useEntitlements() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [isPro, setIsPro] = useState(false);
+  // In demo/skip-auth mode, grant pro access so tester can preview everything
+  const [isPro, setIsPro] = useState(runtimeConfig.skipAuth);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    if (runtimeConfig.skipAuth) {
+      setIsPro(true);
+      return;
+    }
     if (!user) {
       setIsPro(false);
       setError(null);
