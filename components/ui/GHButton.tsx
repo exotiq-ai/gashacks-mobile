@@ -1,5 +1,6 @@
 import { colors, spacing, typography } from "@/constants/theme";
-import { ActivityIndicator, Pressable, StyleSheet, ViewStyle } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ActivityIndicator, Pressable, StyleSheet, View, ViewStyle } from "react-native";
 import { GHText } from "./GHText";
 
 type Variant = "primary" | "secondary" | "ghost";
@@ -11,6 +12,7 @@ type Props = {
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
+  leftIcon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 };
 
 export function GHButton({
@@ -20,8 +22,11 @@ export function GHButton({
   disabled = false,
   loading = false,
   style,
+  leftIcon,
 }: Props) {
   const isDisabled = disabled || loading;
+  const textTone = variant === "primary" ? "muted" : "accent";
+  const iconColor = variant === "primary" ? "#111111" : colors.accent.lime;
   return (
     <Pressable
       style={({ pressed }) => [
@@ -36,10 +41,17 @@ export function GHButton({
     >
       {loading ? (
         <ActivityIndicator color={variant === "primary" ? "#111111" : colors.accent.lime} />
+      ) : leftIcon ? (
+        <View style={styles.iconRow}>
+          <MaterialCommunityIcons name={leftIcon} size={18} color={iconColor} />
+          <GHText variant="body" tone={textTone} style={styles.label}>
+            {label}
+          </GHText>
+        </View>
       ) : (
         <GHText
           variant="body"
-          tone={variant === "primary" ? "muted" : "accent"}
+          tone={textTone}
           style={styles.label}
         >
           {label}
@@ -57,6 +69,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 50,
+  },
+  iconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   label: {
     fontFamily: typography.fontFamily.semibold,

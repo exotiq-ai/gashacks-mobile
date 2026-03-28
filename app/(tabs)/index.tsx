@@ -126,11 +126,13 @@ export default function HubScreen() {
         <GHCard style={styles.card}>
           <GHText variant="subtitle">Quick Actions</GHText>
           <GHButton
-            label="🧮  Open Calculator"
+            label="Open Calculator"
+            leftIcon="calculator-variant"
             onPress={() => router.push("/(tabs)/calculator")}
           />
           <GHButton
-            label="📋  View Fill Logs"
+            label="View Fill Logs"
+            leftIcon="clipboard-text-clock"
             variant="secondary"
             onPress={() => router.push("/(tabs)/logs")}
           />

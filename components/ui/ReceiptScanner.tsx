@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GHButton } from "./GHButton";
 import { GHCard } from "./GHCard";
 import { GHText } from "./GHText";
@@ -93,9 +94,12 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
     <Modal visible={visible} animationType="slide" transparent={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <GHText variant="title" tone="accent">
-            📸 Receipt
-          </GHText>
+          <View style={styles.headerTitle}>
+            <MaterialCommunityIcons name="camera" size={24} color={colors.accent.lime} />
+            <GHText variant="title" tone="accent">
+              Receipt
+            </GHText>
+          </View>
           <Pressable onPress={() => { reset(); onClose(); }}>
             <GHText tone="secondary" style={styles.closeBtn}>
               ✕
@@ -112,7 +116,9 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
             <Animated.View entering={FadeIn.duration(300)}>
               <GHCard style={styles.cameraCard}>
                 <View style={styles.cameraPlaceholder}>
-                  <GHText style={styles.cameraIcon}>📷</GHText>
+                  <View style={styles.cameraIconContainer}>
+                    <MaterialCommunityIcons name="camera" size={48} color={colors.text.secondary} />
+                  </View>
                   <GHText tone="secondary" style={styles.cameraText}>
                     Take a photo of your pump receipt
                   </GHText>
@@ -121,7 +127,8 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
                   </GHText>
                 </View>
                 <GHButton
-                  label={isPro ? "Scan Receipt" : "🔒 Pro Feature"}
+                  label={isPro ? "Scan Receipt" : "Pro Feature"}
+                  leftIcon={isPro ? "camera" : "lock"}
                   onPress={() => void handleCapture()}
                   disabled={!isPro}
                 />
@@ -298,6 +305,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingTop: 60,
   },
+  headerTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
   closeBtn: {
     fontSize: 24,
     padding: spacing.sm,
@@ -317,8 +329,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.xl,
   },
-  cameraIcon: {
-    fontSize: 64,
+  cameraIconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   cameraText: {
     textAlign: "center",

@@ -1,6 +1,7 @@
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
@@ -115,9 +116,12 @@ export default function LogsScreen() {
           </View>
         </View>
         {item.station_name && (
-          <GHText tone="muted" variant="caption">
-            📍 {item.station_name}
-          </GHText>
+          <View style={styles.stationRow}>
+            <MaterialCommunityIcons name="map-marker" size={12} color={colors.text.muted} />
+            <GHText tone="muted" variant="caption">
+              {item.station_name}
+            </GHText>
+          </View>
         )}
       </GHCard>
     );
@@ -162,7 +166,9 @@ export default function LogsScreen() {
 
       {!loading && visible.length === 0 ? (
         <View style={styles.emptyState}>
-          <GHText style={styles.emptyIcon}>📋</GHText>
+          <View style={styles.emptyIconContainer}>
+            <MaterialCommunityIcons name="clipboard-text-clock" size={48} color={colors.text.secondary} />
+          </View>
           <GHText tone="secondary" style={styles.emptyText}>
             {logs.length === 0
               ? "No fills logged yet. Save a blend from the Calculator to start tracking."
@@ -237,11 +243,23 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     gap: spacing.md,
   },
-  emptyIcon: {
-    fontSize: 48,
+  emptyIconContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyText: {
     textAlign: "center",
+  },
+  stationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   logCard: {
     gap: spacing.sm,

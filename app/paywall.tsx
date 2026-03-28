@@ -4,6 +4,7 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { getOfferings, purchasePackage, restorePurchases } from "@/lib/revenuecat";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -13,12 +14,12 @@ import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases
 type Plan = "monthly" | "annual";
 
 const FEATURES = [
-  { emoji: "🏎️", title: "Unlimited Vehicles", desc: "Add your entire fleet" },
-  { emoji: "📋", title: "Full Log History", desc: "Never lose a fill record" },
-  { emoji: "📸", title: "Receipt Scanning", desc: "Auto-log from pump receipts" },
-  { emoji: "📊", title: "Cost Analytics", desc: "Track savings vs premium gas" },
-  { emoji: "📍", title: "Station Finder", desc: "All nearby E85 stations" },
-  { emoji: "📤", title: "Export to CSV", desc: "Download your data anytime" },
+  { icon: "car-multiple" as const, title: "Unlimited Vehicles", desc: "Add your entire fleet" },
+  { icon: "clipboard-text-clock" as const, title: "Full Log History", desc: "Never lose a fill record" },
+  { icon: "camera" as const, title: "Receipt Scanning", desc: "Auto-log from pump receipts" },
+  { icon: "chart-line" as const, title: "Cost Analytics", desc: "Track savings vs premium gas" },
+  { icon: "map-marker-radius" as const, title: "Station Finder", desc: "All nearby E85 stations" },
+  { icon: "export-variant" as const, title: "Export to CSV", desc: "Download your data anytime" },
 ];
 
 export default function PaywallScreen() {
@@ -89,7 +90,7 @@ export default function PaywallScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         {/* Hero */}
         <View style={styles.hero}>
-          <GHText style={styles.heroEmoji}>⚡</GHText>
+          <MaterialCommunityIcons name="lightning-bolt" size={56} color={colors.accent.lime} />
           <GHText variant="title" tone="accent">
             Go Pro
           </GHText>
@@ -102,7 +103,9 @@ export default function PaywallScreen() {
         <View style={styles.features}>
           {FEATURES.map((f) => (
             <View key={f.title} style={styles.featureRow}>
-              <GHText style={styles.featureEmoji}>{f.emoji}</GHText>
+              <View style={styles.featureIcon}>
+                <MaterialCommunityIcons name={f.icon} size={22} color={colors.accent.lime} />
+              </View>
               <View style={styles.featureText}>
                 <GHText tone="primary" style={styles.featureTitle}>
                   {f.title}
@@ -210,10 +213,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.md,
   },
-  featureEmoji: {
-    fontSize: 28,
+  featureIcon: {
     width: 40,
-    textAlign: "center",
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: "rgba(213, 254, 124, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   featureText: {
     flex: 1,

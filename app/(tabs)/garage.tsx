@@ -2,6 +2,7 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import {
@@ -156,7 +157,9 @@ export default function GarageScreen() {
       {/* Vehicle List */}
       {vehicles.length === 0 && !loading ? (
         <GHCard style={styles.emptyCard}>
-          <GHText style={styles.emptyIcon}>🏎️</GHText>
+          <View style={styles.emptyIconContainer}>
+            <MaterialCommunityIcons name="car-sports" size={48} color={colors.text.secondary} />
+          </View>
           <GHText tone="secondary" style={styles.emptyText}>
             No vehicles yet. Add your ride to get started.
           </GHText>
@@ -391,8 +394,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.xl,
   },
-  emptyIcon: {
-    fontSize: 48,
+  emptyIconContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyText: {
     textAlign: "center",

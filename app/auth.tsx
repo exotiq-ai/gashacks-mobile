@@ -2,6 +2,7 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
 import * as Haptics from "expo-haptics";
 import { Redirect } from "expo-router";
@@ -74,7 +75,9 @@ export default function AuthScreen() {
       >
         {/* Brand */}
         <View style={styles.brand}>
-          <GHText style={styles.logo}>⛽</GHText>
+          <View style={styles.logoContainer}>
+            <MaterialCommunityIcons name="gas-station" size={48} color={colors.accent.lime} />
+          </View>
           <GHText variant="title" tone="accent">
             Gas Hacks
           </GHText>
@@ -191,8 +194,15 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginBottom: spacing.md,
   },
-  logo: {
-    fontSize: 64,
+  logoContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   socialRow: {
     gap: spacing.sm,

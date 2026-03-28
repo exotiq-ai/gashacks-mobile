@@ -1,20 +1,21 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { GHText } from "./GHText";
 
 export type Preset = {
   label: string;
-  emoji: string;
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   targetEthanol: number;
 };
 
 const PRESETS: Preset[] = [
-  { label: "Track Day", emoji: "🏁", targetEthanol: 85 },
-  { label: "Daily", emoji: "🚗", targetEthanol: 30 },
-  { label: "Economy", emoji: "💰", targetEthanol: 10 },
-  { label: "Winter", emoji: "❄️", targetEthanol: 20 },
-  { label: "E50", emoji: "⚡", targetEthanol: 50 },
+  { label: "Track Day", icon: "flag-checkered", targetEthanol: 85 },
+  { label: "Daily", icon: "car", targetEthanol: 30 },
+  { label: "Economy", icon: "currency-usd", targetEthanol: 10 },
+  { label: "Winter", icon: "snowflake", targetEthanol: 20 },
+  { label: "E50", icon: "lightning-bolt", targetEthanol: 50 },
 ];
 
 type Props = {
@@ -40,7 +41,11 @@ export function PresetPills({ activeTarget, onSelect }: Props) {
               onSelect(preset);
             }}
           >
-            <GHText style={styles.emoji}>{preset.emoji}</GHText>
+            <MaterialCommunityIcons
+              name={preset.icon}
+              size={20}
+              color={isActive ? colors.accent.lime : colors.text.secondary}
+            />
             <View>
               <GHText
                 style={styles.pillLabel}
@@ -78,9 +83,6 @@ const styles = StyleSheet.create({
   pillActive: {
     borderColor: colors.accent.lime,
     backgroundColor: "rgba(213, 254, 124, 0.08)",
-  },
-  emoji: {
-    fontSize: 20,
   },
   pillLabel: {
     fontFamily: typography.fontFamily.semibold,

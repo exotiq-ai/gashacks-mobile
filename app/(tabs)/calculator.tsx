@@ -304,7 +304,8 @@ export default function CalculatorScreen() {
         disabled={!user || !result.canFillToTarget}
       />
       <GHButton
-        label="📸  Log from Receipt"
+        label="Log from Receipt"
+        leftIcon="camera"
         variant="secondary"
         onPress={() => setShowReceipt(true)}
       />

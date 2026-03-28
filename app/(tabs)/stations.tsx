@@ -3,6 +3,7 @@ import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { PremiumGate } from "@/components/ui/PremiumGate";
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { buildMapsUrl, fetchNearbyE85Stations, getDistanceBadgeColor, type Station } from "@/lib/stations";
 import * as Haptics from "expo-haptics";
@@ -170,7 +171,9 @@ export default function StationsScreen() {
 
       {!loading && searched && stations.length === 0 && (
         <GHCard style={styles.emptyCard}>
-          <GHText tone="secondary" style={styles.emptyEmoji}>⛽</GHText>
+          <View style={styles.emptyIconContainer}>
+            <MaterialCommunityIcons name="gas-station" size={48} color={colors.text.secondary} />
+          </View>
           <GHText variant="subtitle" style={{ textAlign: "center" }}>
             No stations found
           </GHText>
@@ -302,8 +305,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.xl,
   },
-  emptyEmoji: {
-    fontSize: 40,
+  emptyIconContainer: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
   stationCard: {
     gap: spacing.sm,

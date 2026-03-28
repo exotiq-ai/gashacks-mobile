@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GHButton } from "./GHButton";
 import { GHText } from "./GHText";
 import * as Haptics from "expo-haptics";
@@ -9,38 +10,38 @@ import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from "react-nat
 const { width } = Dimensions.get("window");
 
 type Step = {
-  emoji: string;
+  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
   title: string;
   description: string;
 };
 
 const STEPS: Step[] = [
   {
-    emoji: "🏎️",
+    icon: "car-sports",
     title: "Add Your Ride",
     description:
       "Start by adding your vehicle in the Garage. We've got 55+ performance cars pre-loaded with correct tank sizes.",
   },
   {
-    emoji: "🧮",
+    icon: "calculator-variant",
     title: "Calculate Your Blend",
     description:
       "Set your current tank level, current E-mix, and target blend. Gas Hacks tells you exactly how many gallons of E85 and pump gas to add.",
   },
   {
-    emoji: "⛽",
+    icon: "gas-station",
     title: "Fill Up Smart",
     description:
       "At the pump, follow the fill instructions. Pump E85 first, then top off with premium. Easy.",
   },
   {
-    emoji: "📋",
+    icon: "clipboard-text-clock",
     title: "Track Everything",
     description:
       "Save every fill to your logbook. Track your blends, costs, and octane over time. Your data, always accessible.",
   },
   {
-    emoji: "🚀",
+    icon: "rocket-launch",
     title: "You're Ready",
     description:
       "That's it. Calculate, fill, log, repeat. Welcome to Gas Hacks.",
@@ -92,7 +93,9 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
             exiting={SlideOutLeft.duration(200)}
             style={styles.stepContent}
           >
-            <GHText style={styles.emoji}>{current.emoji}</GHText>
+            <View style={styles.iconContainer}>
+              <MaterialCommunityIcons name={current.icon} size={56} color={colors.accent.lime} />
+            </View>
             <GHText variant="title" tone="accent" style={styles.title}>
               {current.title}
             </GHText>
@@ -114,7 +117,8 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
 
         <View style={styles.actions}>
           <GHButton
-            label={isLast ? "Let's Go 🏁" : "Next"}
+            label={isLast ? "Let's Go" : "Next"}
+            leftIcon={isLast ? "flag-checkered" : undefined}
             onPress={next}
           />
         </View>
@@ -150,8 +154,15 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.md,
   },
-  emoji: {
-    fontSize: 72,
+  iconContainer: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: colors.glass.background,
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     textAlign: "center",
