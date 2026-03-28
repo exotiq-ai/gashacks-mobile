@@ -41,34 +41,49 @@ export default function StationsScreen() {
     setLoading(true);
     setSearched(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Location Required",
-          "Enable location access to find nearby E85 stations.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Open Settings", onPress: () => Linking.openSettings() },
-          ],
-        );
-        return;
+      let lat: number;
+      let lng: number;
+      let label = "Your location";
+
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Location Required",
+            "Enable location access to find nearby E85 stations. Using Denver, CO as fallback.",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Open Settings", onPress: () => Linking.openSettings() },
+            ],
+          );
+          // Fallback to Denver, CO for demo
+          lat = 39.7392;
+          lng = -104.9903;
+          label = "Denver, CO (demo)";
+        } else {
+          const loc = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          });
+          lat = loc.coords.latitude;
+          lng = loc.coords.longitude;
+
+          try {
+            const [geo] = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+            label = geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location";
+          } catch {
+            // Reverse geocode failed — no big deal
+          }
+        }
+      } catch {
+        // Location module not available (preview build) — use fallback
+        lat = 39.7392;
+        lng = -104.9903;
+        label = "Denver, CO (demo)";
       }
 
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      setLocationLabel(label);
 
-      const [geo] = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-      setLocationLabel(geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location");
-
-      const results = await fetchNearbyE85Stations(
-        loc.coords.latitude,
-        loc.coords.longitude,
-        radiusMiles,
-      );
+      const results = await fetchNearbyE85Stations(lat, lng, radiusMiles);
       setStations(results);
     } catch (err) {
       Alert.alert("Error", err instanceof Error ? err.message : "Failed to fetch stations.");

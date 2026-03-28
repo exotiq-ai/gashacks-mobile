@@ -83,7 +83,6 @@ export default function GarageScreen() {
   };
 
   const handleAdd = async () => {
-    if (!user) return;
     setSaving(true);
     setError(null);
     try {
@@ -100,6 +99,23 @@ export default function GarageScreen() {
 
       if (!addMake || !addModel || addTank <= 0) {
         setError("Make, model, and tank size are required.");
+        setSaving(false);
+        return;
+      }
+
+      // In demo mode (no user), save locally only
+      if (!user) {
+        const localVehicle = {
+          id: `local-${Date.now()}`,
+          year: addYear,
+          make: addMake,
+          model: addModel,
+          tankCapacityGallons: addTank,
+          currentTune: tune || undefined,
+        };
+        useGarageStore.getState().addVehicle(localVehicle);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        resetForm();
         setSaving(false);
         return;
       }
