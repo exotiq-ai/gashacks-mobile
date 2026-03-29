@@ -19,11 +19,12 @@ type ConfigHealth = {
 
 function readEnv() {
   const skipAuthRaw = (process.env.EXPO_PUBLIC_SKIP_AUTH ?? "").toLowerCase();
+  // Hardcoded fallbacks ensure the app works even if EAS env vars don't bake in
   return {
-    appEnv: process.env.EXPO_PUBLIC_APP_ENV ?? "",
-    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
-    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
-    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
+    appEnv: process.env.EXPO_PUBLIC_APP_ENV || "production",
+    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || "https://feicgarueqllkpzgewul.supabase.co",
+    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlaWNnYXJ1ZXFsbGtwemdld3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNzUzOTgsImV4cCI6MjA4ODk1MTM5OH0.yjP0iBlBTVxHnw-Bu_e4wT3LvZGdsHwLINAcfm78FOM",
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "",
     skipAuth: skipAuthRaw === "1" || skipAuthRaw === "true" || skipAuthRaw === "yes",
   };
 }
