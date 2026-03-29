@@ -47,8 +47,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: typography.fontFamily.medium,
-          fontSize: 10,
-          letterSpacing: 0.6,
+          fontSize: 9,
           textTransform: "uppercase",
         },
         sceneStyle: {
@@ -78,7 +77,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="calculator"
         options={{
-          title: "Calculator",
+          title: "Calc",
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "calculator-variant" : "calculator-variant-outline"}
@@ -104,7 +103,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="stations"
         options={{
-          title: "Stations",
+          title: "E85",
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "map-marker-radius" : "map-marker-radius-outline"}
@@ -130,7 +129,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "More",
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? "cog" : "cog-outline"}

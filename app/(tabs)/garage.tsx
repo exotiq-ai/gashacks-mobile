@@ -17,6 +17,8 @@ import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -85,41 +87,42 @@ export default function GarageScreen() {
   const handleAdd = async () => {
     setSaving(true);
     setError(null);
+
+    let addMake = make;
+    let addModel = model;
+    let addTank = Number(tankCapacity);
+    let addYear = year ? Number(year) : undefined;
+
+    if (addMode === "pick" && selectedTemplate) {
+      addMake = selectedTemplate.make;
+      addModel = selectedTemplate.model;
+      addTank = selectedTemplate.tankGallons;
+    }
+
+    if (!addMake || !addModel || addTank <= 0) {
+      setError("Make, model, and tank size are required.");
+      setSaving(false);
+      return;
+    }
+
+    // In demo mode (no user), save locally only
+    if (!user) {
+      const localVehicle = {
+        id: `local-${Date.now()}`,
+        year: addYear,
+        make: addMake,
+        model: addModel,
+        tankCapacityGallons: addTank,
+        currentTune: tune || undefined,
+      };
+      useGarageStore.getState().addVehicle(localVehicle);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      resetForm();
+      setSaving(false);
+      return;
+    }
+
     try {
-      let addMake = make;
-      let addModel = model;
-      let addTank = Number(tankCapacity);
-      let addYear = year ? Number(year) : undefined;
-
-      if (addMode === "pick" && selectedTemplate) {
-        addMake = selectedTemplate.make;
-        addModel = selectedTemplate.model;
-        addTank = selectedTemplate.tankGallons;
-      }
-
-      if (!addMake || !addModel || addTank <= 0) {
-        setError("Make, model, and tank size are required.");
-        setSaving(false);
-        return;
-      }
-
-      // In demo mode (no user), save locally only
-      if (!user) {
-        const localVehicle = {
-          id: `local-${Date.now()}`,
-          year: addYear,
-          make: addMake,
-          model: addModel,
-          tankCapacityGallons: addTank,
-          currentTune: tune || undefined,
-        };
-        useGarageStore.getState().addVehicle(localVehicle);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        resetForm();
-        setSaving(false);
-        return;
-      }
-
       const created = await createVehicle({
         userId: user.id,
         year: addYear,
@@ -132,7 +135,20 @@ export default function GarageScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add vehicle.");
+      const errMsg = err instanceof Error ? err.message : "Failed to save vehicle.";
+      // Fall back to local save so the user doesn't lose their data
+      const localVehicle = {
+        id: `local-${Date.now()}`,
+        year: addYear,
+        make: addMake,
+        model: addModel,
+        tankCapacityGallons: addTank,
+        currentTune: tune || undefined,
+      };
+      useGarageStore.getState().addVehicle(localVehicle);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setError(`Saved locally (sync failed: ${errMsg})`);
+      resetForm();
     } finally {
       setSaving(false);
     }
@@ -153,10 +169,15 @@ export default function GarageScreen() {
   const canAdd = canAddVehicle(vehicles.length, entitlements);
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 90 }]}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <GHText variant="title" tone="accent">
         Garage
@@ -344,6 +365,7 @@ export default function GarageScreen() {
         </GHCard>
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
