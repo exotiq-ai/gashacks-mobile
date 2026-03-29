@@ -4,12 +4,14 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import * as Haptics from "expo-haptics";
 import { Redirect } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -19,11 +21,25 @@ import {
 export default function AuthScreen() {
   const { isAuthenticated, loading, signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
+  const biometric = useBiometricAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Auto-prompt biometrics if enabled
+  useEffect(() => {
+    if (!biometric.loading && biometric.isEnabled && biometric.isAvailable && !isAuthenticated) {
+      biometric.authenticate("Unlock Gas Hacks").then((success) => {
+        if (success) {
+          // Session is already persisted by Supabase — biometric just gates access
+          // The auth state will update via onAuthStateChange
+        }
+      });
+    }
+  }, [biometric.loading, biometric.isEnabled, biometric.isAvailable, isAuthenticated]);
 
   if (!loading && isAuthenticated) {
     return <Redirect href="/(tabs)" />;
@@ -43,6 +59,10 @@ export default function AuthScreen() {
         await signUpWithEmail(email.trim(), password);
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Offer biometric setup after successful auth
+      if (biometric.isAvailable && !biometric.isEnabled) {
+        await biometric.enableBiometrics();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -57,8 +77,19 @@ export default function AuthScreen() {
       if (method === "apple") await signInWithApple();
       else await signInWithGoogle();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Enable biometrics after social sign-in
+      if (biometric.isAvailable && !biometric.isEnabled) {
+        await biometric.enableBiometrics();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : `${method} sign-in failed.`);
+    }
+  };
+
+  const handleBiometricSignIn = async () => {
+    const success = await biometric.authenticate("Sign in to Gas Hacks");
+    if (success) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   };
 
@@ -86,17 +117,35 @@ export default function AuthScreen() {
           </GHText>
         </View>
 
+        {/* Biometric quick sign-in */}
+        {biometric.isEnabled && biometric.isAvailable && (
+          <Pressable style={styles.biometricBtn} onPress={() => void handleBiometricSignIn()}>
+            <MaterialCommunityIcons
+              name={biometric.biometricType === "facial" ? "face-recognition" : "fingerprint"}
+              size={32}
+              color={colors.accent.lime}
+            />
+            <GHText tone="accent" style={styles.biometricLabel}>
+              Sign in with {biometric.biometricLabel}
+            </GHText>
+          </Pressable>
+        )}
+
         {/* Social Auth */}
         <View style={styles.socialRow}>
-          <GHButton
-            label="Continue with Apple"
-            variant="secondary"
-            onPress={() => void handleSocial("apple")}
-            style={styles.socialBtn}
-          />
+          {Platform.OS === "ios" && (
+            <GHButton
+              label="Continue with Apple"
+              variant="secondary"
+              leftIcon="apple"
+              onPress={() => void handleSocial("apple")}
+              style={styles.socialBtn}
+            />
+          )}
           <GHButton
             label="Continue with Google"
             variant="secondary"
+            leftIcon="google"
             onPress={() => void handleSocial("google")}
             style={styles.socialBtn}
           />
@@ -129,6 +178,9 @@ export default function AuthScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+              importantForAutofill="yes"
               style={styles.input}
             />
           </View>
@@ -137,14 +189,30 @@ export default function AuthScreen() {
             <GHText tone="secondary" variant="caption" style={styles.fieldLabel}>
               PASSWORD
             </GHText>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="••••••••"
-              placeholderTextColor={colors.text.muted}
-              secureTextEntry
-              style={styles.input}
-            />
+            <View style={styles.passwordRow}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="••••••••"
+                placeholderTextColor={colors.text.muted}
+                secureTextEntry={!showPassword}
+                autoComplete={authMode === "signup" ? "password-new" : "password"}
+                textContentType={authMode === "signup" ? "newPassword" : "password"}
+                importantForAutofill="yes"
+                style={[styles.input, styles.passwordInput]}
+              />
+              <Pressable
+                style={styles.eyeBtn}
+                onPress={() => setShowPassword(!showPassword)}
+                hitSlop={12}
+              >
+                <MaterialCommunityIcons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={20}
+                  color={colors.text.muted}
+                />
+              </Pressable>
+            </View>
           </View>
 
           {error && (
@@ -204,6 +272,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  biometricBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.lg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.2)",
+    backgroundColor: "rgba(213, 254, 124, 0.04)",
+  },
+  biometricLabel: {
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: typography.fontSize.base,
+  },
   socialRow: {
     gap: spacing.sm,
   },
@@ -240,6 +323,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontFamily: typography.fontFamily.regular,
     fontSize: 16,
+  },
+  passwordRow: {
+    position: "relative",
+  },
+  passwordInput: {
+    paddingRight: 48,
+  },
+  eyeBtn: {
+    position: "absolute",
+    right: 12,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
   },
   errorText: {
     color: colors.status.error,

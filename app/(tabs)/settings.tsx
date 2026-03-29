@@ -2,7 +2,9 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
+import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { restorePurchases } from "@/lib/revenuecat";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +14,7 @@ import { useState } from "react";
 import {
   Alert,
   Linking,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -24,6 +27,7 @@ const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 export default function SettingsScreen() {
   const { user, signOut } = useAuth();
   const { isPro, refresh } = useEntitlements();
+  const biometric = useBiometricAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [deleting, setDeleting] = useState(false);
@@ -190,10 +194,43 @@ export default function SettingsScreen() {
         </View>
       </GHCard>
 
+      {/* Biometric Login */}
+      {biometric.isAvailable && (
+        <GHCard style={styles.card}>
+          <View style={styles.biometricRow}>
+            <MaterialCommunityIcons
+              name={biometric.biometricType === "facial" ? "face-recognition" : "fingerprint"}
+              size={24}
+              color={colors.accent.lime}
+            />
+            <View style={{ flex: 1 }}>
+              <GHText variant="subtitle">{biometric.biometricLabel} Login</GHText>
+              <GHText tone="muted" variant="caption">
+                Quick sign-in with {biometric.biometricLabel}
+              </GHText>
+            </View>
+            <Pressable
+              style={[styles.toggle, biometric.isEnabled && styles.toggleOn]}
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (biometric.isEnabled) {
+                  await biometric.disableBiometrics();
+                } else {
+                  await biometric.enableBiometrics();
+                }
+              }}
+            >
+              <View style={[styles.toggleThumb, biometric.isEnabled && styles.toggleThumbOn]} />
+            </Pressable>
+          </View>
+        </GHCard>
+      )}
+
       {/* Sign Out */}
       <GHButton
         label="Sign Out"
         variant="secondary"
+        leftIcon="logout"
         onPress={() => {
           signOut();
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -267,5 +304,34 @@ const styles = StyleSheet.create({
   deleteBtn: {
     borderWidth: 1,
     borderColor: "rgba(239, 68, 68, 0.3)",
+  },
+  biometricRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  toggle: {
+    width: 48,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.background.tertiary,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    justifyContent: "center",
+    paddingHorizontal: 2,
+  },
+  toggleOn: {
+    backgroundColor: "rgba(213, 254, 124, 0.15)",
+    borderColor: colors.accent.lime,
+  },
+  toggleThumb: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.text.muted,
+  },
+  toggleThumbOn: {
+    backgroundColor: colors.accent.lime,
+    alignSelf: "flex-end",
   },
 });
