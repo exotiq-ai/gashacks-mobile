@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GHButton } from "./GHButton";
 import { GHCard } from "./GHCard";
 import { GHText } from "./GHText";
@@ -17,7 +18,9 @@ export function SafetyDisclaimer({ visible, onAccept }: Props) {
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
         >
-          <GHText style={styles.icon}>⚠️</GHText>
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons name="alert-circle" size={48} color={colors.status.warning} />
+          </View>
           <GHText variant="title" tone="accent" style={styles.title}>
             Safety First
           </GHText>
@@ -100,9 +103,9 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: spacing.md,
   },
-  icon: {
-    fontSize: 48,
-    textAlign: "center",
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     textAlign: "center",
