@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
 import { applyLogVisibilityLimit } from "@/lib/entitlements";
+import { fixed } from "@/lib/format";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useCallback, useMemo, useState } from "react";
@@ -87,7 +88,7 @@ export default function LogsScreen() {
       <GHCard style={styles.logCard}>
         <View style={styles.logHeader}>
           <GHText tone="accent" style={styles.logBlend}>
-            E{eMix.toFixed(0)}
+            E{fixed(eMix, 0)}
           </GHText>
           <GHText tone="muted" variant="caption">
             {formatDate(item.created_at)}
@@ -98,21 +99,21 @@ export default function LogsScreen() {
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               OCTANE
             </GHText>
-            <GHText tone="secondary">{octane.toFixed(1)}</GHText>
+            <GHText tone="secondary">{fixed(octane, 1)}</GHText>
           </View>
           <View style={styles.logDivider} />
           <View style={styles.logStat}>
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               E85
             </GHText>
-            <GHText tone="secondary">{e85Gal.toFixed(1)}g</GHText>
+            <GHText tone="secondary">{fixed(e85Gal, 1)}g</GHText>
           </View>
           <View style={styles.logDivider} />
           <View style={styles.logStat}>
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               PUMP
             </GHText>
-            <GHText tone="secondary">{pumpGal.toFixed(1)}g</GHText>
+            <GHText tone="secondary">{fixed(pumpGal, 1)}g</GHText>
           </View>
         </View>
         {item.station_name && (

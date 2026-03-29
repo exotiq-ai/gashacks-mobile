@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { dollars, fixed } from "@/lib/format";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GHButton } from "./GHButton";
 import { GHCard } from "./GHCard";
@@ -186,7 +187,7 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
                 <View style={styles.totalRow}>
                   <GHText tone="secondary">Estimated Total</GHText>
                   <GHText tone="accent" style={styles.totalValue}>
-                    ${computedTotal.toFixed(2)}
+                    {dollars(computedTotal, 2)}
                   </GHText>
                 </View>
 
@@ -194,7 +195,7 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
                   label="Actual Total (override)"
                   value={totalCost}
                   onChange={setTotalCost}
-                  placeholder={computedTotal.toFixed(2)}
+                  placeholder={fixed(computedTotal, 2)}
                   numeric
                   prefix="$"
                 />

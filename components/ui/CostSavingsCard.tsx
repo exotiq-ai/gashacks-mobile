@@ -1,5 +1,6 @@
 import { colors, spacing, typography } from "@/constants/theme";
 import { type FillLog } from "@/lib/data";
+import { dollars, fixed } from "@/lib/format";
 import { GHCard } from "./GHCard";
 import { GHText } from "./GHText";
 import { StyleSheet, View } from "react-native";
@@ -58,7 +59,7 @@ export function CostSavingsCard({ logs }: Props) {
             TOTAL GALLONS
           </GHText>
           <GHText tone="accent" style={styles.statValue}>
-            {totalGallons.toFixed(0)}
+            {fixed(totalGallons, 0)}
           </GHText>
         </View>
         <View style={styles.stat}>
@@ -66,7 +67,7 @@ export function CostSavingsCard({ logs }: Props) {
             AVG $/GAL
           </GHText>
           <GHText tone="accent" style={styles.statValue}>
-            ${avgCostPerGal.toFixed(2)}
+            {dollars(avgCostPerGal, 2)}
           </GHText>
         </View>
         <View style={styles.stat}>
@@ -77,7 +78,7 @@ export function CostSavingsCard({ logs }: Props) {
             tone={savings > 0 ? "accent" : "secondary"}
             style={styles.statValue}
           >
-            ${Math.max(0, savings).toFixed(0)}
+            {dollars(Math.max(0, savings), 0)}
           </GHText>
         </View>
       </View>

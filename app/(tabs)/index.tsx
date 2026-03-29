@@ -8,6 +8,7 @@ import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
+import { fixed } from "@/lib/format";
 import { useGarageStore } from "@/lib/store";
 import { Redirect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -76,8 +77,8 @@ export default function HubScreen() {
           <View style={styles.gridItem}>
             <TelemetryDial
               label="Last Blend"
-              value={lastLog ? `E${lastEthanol.toFixed(0)}` : "—"}
-              caption={lastLog ? `${lastOctane.toFixed(1)} oct` : "No logs yet"}
+              value={lastLog ? `E${fixed(lastEthanol, 0)}` : "—"}
+              caption={lastLog ? `${fixed(lastOctane, 1)} oct` : "No logs yet"}
             />
           </View>
           <View style={styles.gridItem}>

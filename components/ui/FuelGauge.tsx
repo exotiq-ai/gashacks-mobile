@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { fixed } from "@/lib/format";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
@@ -86,7 +87,7 @@ export function FuelGauge({ tankLevel, ethanolMix, tankSize }: Props) {
             {Math.round(tankLevel)}%
           </GHText>
           <GHText variant="caption" tone="secondary">
-            {gallonsInTank.toFixed(1)} gal
+            {fixed(gallonsInTank, 1)} gal
           </GHText>
           <View style={[styles.ethBadge, { borderColor: ethColor }]}>
             <GHText
@@ -103,7 +104,7 @@ export function FuelGauge({ tankLevel, ethanolMix, tankSize }: Props) {
               Room
             </GHText>
             <GHText variant="caption" tone="secondary">
-              {emptyGallons.toFixed(1)}g
+              {fixed(emptyGallons, 1)}g
             </GHText>
           </View>
         </View>

@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { calculateBlend } from "@/lib/calculator";
 import { createFillLog } from "@/lib/data";
+import { fixed } from "@/lib/format";
 import { useGarageStore } from "@/lib/store";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useState } from "react";
@@ -254,7 +255,7 @@ export default function CalculatorScreen() {
                     PUMP FIRST
                   </GHText>
                   <GHText style={styles.resultValue}>
-                    {result.ethanolToAdd.toFixed(2)}
+                    {fixed(result.ethanolToAdd, 2)}
                   </GHText>
                   <GHText tone="secondary" variant="caption">
                     gal E85
@@ -266,7 +267,7 @@ export default function CalculatorScreen() {
                     THEN TOP OFF
                   </GHText>
                   <GHText style={styles.resultValue}>
-                    {result.pumpGasToAdd.toFixed(2)}
+                    {fixed(result.pumpGasToAdd, 2)}
                   </GHText>
                   <GHText tone="secondary" variant="caption">
                     gal premium
@@ -278,11 +279,11 @@ export default function CalculatorScreen() {
                   Blend outcome:
                 </GHText>
                 <GHText tone="accent" style={styles.outcomeValue}>
-                  E{result.resultingMix.toFixed(1)}
+                  E{fixed(result.resultingMix, 1)}
                 </GHText>
                 <GHText tone="muted">·</GHText>
                 <GHText tone="accent" style={styles.outcomeValue}>
-                  {result.octaneRating.toFixed(1)} oct
+                  {fixed(result.octaneRating, 1)} oct
                 </GHText>
               </View>
             </>

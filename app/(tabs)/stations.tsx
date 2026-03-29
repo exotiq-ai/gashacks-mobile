@@ -5,6 +5,7 @@ import { PremiumGate } from "@/components/ui/PremiumGate";
 import { colors, spacing, typography } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { fixed } from "@/lib/format";
 import { buildMapsUrl, fetchNearbyE85Stations, getDistanceBadgeColor, type Station } from "@/lib/stations";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
@@ -221,7 +222,7 @@ export default function StationsScreen() {
                   <GHText
                     style={[styles.distanceText, { color: getDistanceBadgeColor(station.distanceMiles) }]}
                   >
-                    {station.distanceMiles.toFixed(1)}mi
+                    {fixed(station.distanceMiles, 1)}mi
                   </GHText>
                 </View>
               </View>
@@ -258,7 +259,7 @@ export default function StationsScreen() {
             {stations.slice(entitlements.maxStationsVisible, entitlements.maxStationsVisible + 2).map((s) => (
               <View key={s.id} style={styles.blurStation}>
                 <GHText style={styles.stationName}>{s.name}</GHText>
-                <GHText tone="secondary" variant="caption">{s.distanceMiles.toFixed(1)}mi away</GHText>
+                <GHText tone="secondary" variant="caption">{fixed(s.distanceMiles, 1)}mi away</GHText>
               </View>
             ))}
           </GHCard>

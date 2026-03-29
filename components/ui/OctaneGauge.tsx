@@ -1,4 +1,5 @@
 import { colors, spacing, typography } from "@/constants/theme";
+import { fixed } from "@/lib/format";
 import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
@@ -82,7 +83,7 @@ export function OctaneGauge({ octane, size = 130 }: Props) {
       {/* Center content */}
       <View style={styles.centerLabel}>
         <GHText style={[styles.octaneValue, { color: ringColor }]}>
-          {octane.toFixed(1)}
+          {fixed(octane, 1)}
         </GHText>
         <GHText style={styles.octaneUnit} tone="muted">
           OCTANE
