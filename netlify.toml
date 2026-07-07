@@ -1,0 +1,15 @@
+[build]
+  command = "npx expo export -p web"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+  EXPO_PUBLIC_APP_ENV = "preview"
+  EXPO_PUBLIC_SKIP_AUTH = "true"
+  EXPO_PUBLIC_RECEIPT_SCAN_API_URL = "/.netlify/functions/receipt-scan"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

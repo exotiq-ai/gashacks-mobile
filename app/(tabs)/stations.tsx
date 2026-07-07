@@ -25,6 +25,11 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const RADIUS_OPTIONS = [10, 25, 50, 100];
+const FALLBACK_LOCATION = {
+  latitude: 39.7392,
+  longitude: -104.9903,
+  label: "Curated E85 stations",
+};
 
 export default function StationsScreen() {
   const { isPro, entitlements } = useEntitlements();
@@ -53,11 +58,15 @@ export default function StationsScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      const [geo] = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-      setLocationLabel(geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location");
+      try {
+        const [geo] = await Location.reverseGeocodeAsync({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        });
+        setLocationLabel(geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location");
+      } catch {
+        setLocationLabel("Your location");
+      }
 
       const results = await fetchNearbyE85Stations(
         loc.coords.latitude,
@@ -65,8 +74,15 @@ export default function StationsScreen() {
         radiusMiles,
       );
       setStations(results);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch stations.");
+    } catch {
+      const fallback = await fetchNearbyE85Stations({
+        latitude: FALLBACK_LOCATION.latitude,
+        longitude: FALLBACK_LOCATION.longitude,
+        radiusMiles,
+      });
+      setLocationLabel(FALLBACK_LOCATION.label);
+      setStations(fallback);
+      setError("Live station lookup failed. Showing curated E85 options for testing.");
     } finally {
       setLoading(false);
     }
@@ -90,8 +106,15 @@ export default function StationsScreen() {
       });
       setLocationLabel(location);
       setStations(results);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch stations.");
+    } catch {
+      const fallback = await fetchNearbyE85Stations({
+        latitude: FALLBACK_LOCATION.latitude,
+        longitude: FALLBACK_LOCATION.longitude,
+        radiusMiles,
+      });
+      setLocationLabel(FALLBACK_LOCATION.label);
+      setStations(fallback);
+      setError("Live station lookup failed. Showing curated E85 options for testing.");
     } finally {
       setLoading(false);
     }
@@ -229,7 +252,7 @@ export default function StationsScreen() {
             No stations found
           </GHText>
           <GHText tone="muted" variant="caption" style={{ textAlign: "center" }}>
-            Try expanding your search radius
+            Try a nearby city, state, or ZIP
           </GHText>
         </GHCard>
       )}

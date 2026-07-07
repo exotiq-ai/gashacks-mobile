@@ -139,8 +139,9 @@ export default function GarageScreen() {
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 90 }]}
+      contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 160 }]}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <GHText variant="title" tone="accent">
         Garage
@@ -157,7 +158,9 @@ export default function GarageScreen() {
       {/* Vehicle List */}
       {vehicles.length === 0 && !loading ? (
         <GHCard style={styles.emptyCard}>
-          <MaterialCommunityIcons name="car-sports" size={48} color={colors.text.secondary} />
+          <View style={styles.emptyIconWrap}>
+            <MaterialCommunityIcons name="car-sports" size={42} color={colors.accent.lime} />
+          </View>
           <GHText tone="secondary" style={styles.emptyText}>
             No vehicles yet. Add your ride to get started.
           </GHText>
@@ -392,14 +395,24 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.md,
     paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
   },
-  emptyIcon: {
-    fontSize: 48,
+  emptyIconWrap: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(213, 254, 124, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.2)",
   },
   emptyText: {
     textAlign: "center",
+    maxWidth: 260,
+    lineHeight: 24,
   },
   vehicleCard: {
     borderColor: colors.glass.border,
@@ -484,5 +497,6 @@ const styles = StyleSheet.create({
   addActions: {
     flexDirection: "row",
     gap: spacing.sm,
+    paddingTop: spacing.xs,
   },
 });

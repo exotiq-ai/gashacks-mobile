@@ -1,18 +1,4 @@
-export type ReceiptScanResult = {
-  stationName: string | null;
-  stationAddress: string | null;
-  purchasedAt: string | null;
-  gallonsE85: number | null;
-  gallonsPump: number | null;
-  pricePerGalE85: number | null;
-  pricePerGalPump: number | null;
-  totalCost: number | null;
-  ethanolPercent: number | null;
-  confidence: number;
-  rawText: string | null;
-};
-
-const EMPTY_SCAN: ReceiptScanResult = {
+const EMPTY_SCAN = {
   stationName: null,
   stationAddress: null,
   purchasedAt: null,
@@ -26,19 +12,29 @@ const EMPTY_SCAN: ReceiptScanResult = {
   rawText: null,
 };
 
-type ScanReceiptImageInput = {
-  base64: string;
-  mimeType?: string;
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
 };
 
-function normalizeNumber(value: unknown): number | null {
+function json(statusCode, body) {
+  return {
+    statusCode,
+    headers,
+    body: JSON.stringify(body),
+  };
+}
+
+function normalizeNumber(value) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return null;
   const parsed = Number(value.replace(/[^0-9.]/g, ""));
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function normalizeScanResult(value: Partial<ReceiptScanResult>): ReceiptScanResult {
+function normalizeScanResult(value = {}) {
   return {
     stationName: typeof value.stationName === "string" ? value.stationName : null,
     stationAddress: typeof value.stationAddress === "string" ? value.stationAddress : null,
@@ -54,36 +50,42 @@ function normalizeScanResult(value: Partial<ReceiptScanResult>): ReceiptScanResu
   };
 }
 
-function parseJsonFromModel(text: string): ReceiptScanResult {
+function parseJsonFromModel(text) {
   const trimmed = text.trim();
   const jsonText =
     trimmed.match(/```json\s*([\s\S]*?)\s*```/i)?.[1] ??
     trimmed.match(/\{[\s\S]*\}/)?.[0] ??
     trimmed;
-  return normalizeScanResult(JSON.parse(jsonText) as Partial<ReceiptScanResult>);
+  return normalizeScanResult(JSON.parse(jsonText));
 }
 
-export async function scanReceiptImage({
-  base64,
-  mimeType = "image/jpeg",
-}: ScanReceiptImageInput): Promise<ReceiptScanResult> {
-  const apiUrl =
-    process.env.EXPO_PUBLIC_RECEIPT_SCAN_API_URL ||
-    (typeof window !== "undefined" ? "/.netlify/functions/receipt-scan" : "");
+function extractOutputText(data) {
+  if (typeof data.output_text === "string") return data.output_text;
+  return (data.output ?? [])
+    .flatMap((item) => item.content ?? [])
+    .map((item) => item.text ?? "")
+    .filter(Boolean)
+    .join("\n");
+}
 
-  if (apiUrl) {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageBase64: base64, mimeType }),
-    });
-    if (!response.ok) throw new Error(`Receipt scan failed: ${response.status}`);
-    return normalizeScanResult(await response.json() as Partial<ReceiptScanResult>);
+exports.handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
+  if (event.httpMethod !== "POST") return json(405, { error: "Method not allowed" });
+
+  const openAiKey = process.env.OPENAI_API_KEY;
+  if (!openAiKey) return json(500, { error: "Receipt AI is not configured." });
+
+  let payload;
+  try {
+    payload = JSON.parse(event.body || "{}");
+  } catch {
+    return json(400, { error: "Invalid JSON body." });
   }
 
-  const openAiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-  if (!openAiKey) {
-    throw new Error("Receipt AI is not configured. Add EXPO_PUBLIC_RECEIPT_SCAN_API_URL or EXPO_PUBLIC_OPENAI_API_KEY.");
+  const imageBase64 = payload.imageBase64;
+  const mimeType = payload.mimeType || "image/jpeg";
+  if (typeof imageBase64 !== "string" || imageBase64.length < 20) {
+    return json(400, { error: "Missing receipt image." });
   }
 
   const prompt = [
@@ -109,7 +111,7 @@ export async function scanReceiptImage({
             { type: "input_text", text: prompt },
             {
               type: "input_image",
-              image_url: `data:${mimeType};base64,${base64}`,
+              image_url: `data:${mimeType};base64,${imageBase64}`,
               detail: "high",
             },
           ],
@@ -118,17 +120,17 @@ export async function scanReceiptImage({
     }),
   });
 
-  if (!response.ok) throw new Error(`Receipt scan failed: ${response.status}`);
+  if (!response.ok) {
+    return json(response.status, { error: "Receipt scan failed." });
+  }
 
-  const data = await response.json() as {
-    output_text?: string;
-    output?: Array<{ content?: Array<{ text?: string }> }>;
-  };
-  const text =
-    data.output_text ??
-    data.output?.flatMap((item) => item.content ?? []).map((item) => item.text).filter(Boolean).join("\n") ??
-    "";
+  const data = await response.json();
+  const text = extractOutputText(data);
+  if (!text.trim()) return json(200, EMPTY_SCAN);
 
-  if (!text.trim()) return EMPTY_SCAN;
-  return parseJsonFromModel(text);
-}
+  try {
+    return json(200, parseJsonFromModel(text));
+  } catch {
+    return json(200, normalizeScanResult({ ...EMPTY_SCAN, rawText: text, confidence: 0.35 }));
+  }
+};

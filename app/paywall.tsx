@@ -92,7 +92,9 @@ export default function PaywallScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         {/* Hero */}
         <View style={styles.hero}>
-          <GHText style={styles.heroEmoji}>⚡</GHText>
+          <View style={styles.heroIcon}>
+            <MaterialCommunityIcons name="fuel" size={38} color={colors.accent.lime} />
+          </View>
           <GHText variant="title" tone="accent">
             Go Pro
           </GHText>
@@ -214,8 +216,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.xs,
   },
-  heroEmoji: {
-    fontSize: 56,
+  heroIcon: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(213, 254, 124, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.2)",
   },
   heroSub: {
     textAlign: "center",

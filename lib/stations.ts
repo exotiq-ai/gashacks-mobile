@@ -202,7 +202,6 @@ function normalizeLocation(value: string) {
 }
 
 function fallbackForInput(input: StationSearchInput): Station[] {
-  const radius = input.radiusMiles ?? 25;
   const limit = input.limit ?? 50;
 
   if ("location" in input) {
@@ -221,7 +220,6 @@ function fallbackForInput(input: StationSearchInput): Station[] {
       ...station,
       distanceMiles: distanceMiles(seed, station),
     }))
-      .filter((station) => station.distanceMiles <= Math.max(radius, 100))
       .sort((a, b) => a.distanceMiles - b.distanceMiles)
       .slice(0, limit);
   }
@@ -230,7 +228,6 @@ function fallbackForInput(input: StationSearchInput): Station[] {
     ...station,
     distanceMiles: distanceMiles(input, station),
   }))
-    .filter((station) => station.distanceMiles <= Math.max(radius, 100))
     .sort((a, b) => a.distanceMiles - b.distanceMiles)
     .slice(0, limit);
 }

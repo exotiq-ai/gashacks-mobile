@@ -169,10 +169,14 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
           <GHText variant="title" tone="accent">
             Receipt
           </GHText>
-          <Pressable onPress={() => { reset(); onClose(); }}>
-          <GHText tone="secondary" style={styles.closeBtn}>
-              Close
-            </GHText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close receipt scanner"
+            hitSlop={12}
+            onPress={() => { reset(); onClose(); }}
+            style={styles.closeBtn}
+          >
+            <MaterialCommunityIcons name="close" size={30} color={colors.text.secondary} />
           </Pressable>
         </View>
 
@@ -426,8 +430,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   closeBtn: {
-    fontSize: 24,
-    padding: spacing.sm,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
   },
   scroll: {
     padding: spacing.lg,
@@ -443,9 +450,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     paddingVertical: spacing.xl,
-  },
-  cameraIcon: {
-    fontSize: 64,
   },
   cameraText: {
     textAlign: "center",
