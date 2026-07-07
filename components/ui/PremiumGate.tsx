@@ -3,6 +3,7 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -50,9 +51,10 @@ export function PremiumGate({
         </GHText>
         <GHButton
           label="Go Pro"
+          icon="lock-open-variant"
           onPress={() => {
             void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push("/paywall");
+            router.push("/paywall" as Href);
           }}
           style={styles.lockButton}
         />

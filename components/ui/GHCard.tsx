@@ -1,11 +1,11 @@
 import { colors, spacing } from "@/constants/theme";
 import { BlurView } from "expo-blur";
 import { ReactNode } from "react";
-import { Platform, StyleSheet, View, ViewStyle } from "react-native";
+import { Platform, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 type Props = {
   children: ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function GHCard({ children, style }: Props) {

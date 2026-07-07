@@ -10,7 +10,7 @@ import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from "react-nat
 const { width } = Dimensions.get("window");
 
 type Step = {
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   title: string;
   description: string;
 };
@@ -41,7 +41,7 @@ const STEPS: Step[] = [
       "Save every fill to your logbook. Track your blends, costs, and octane over time. Your data, always accessible.",
   },
   {
-    icon: "rocket-launch",
+    icon: "flag-checkered",
     title: "You're Ready",
     description:
       "That's it. Calculate, fill, log, repeat. Welcome to Gas Hacks.",
@@ -93,8 +93,8 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
             exiting={SlideOutLeft.duration(200)}
             style={styles.stepContent}
           >
-            <View style={styles.iconContainer}>
-              <MaterialCommunityIcons name={current.icon} size={56} color={colors.accent.lime} />
+            <View style={styles.iconShell}>
+              <MaterialCommunityIcons name={current.icon} size={58} color={colors.accent.lime} />
             </View>
             <GHText variant="title" tone="accent" style={styles.title}>
               {current.title}
@@ -118,7 +118,7 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
         <View style={styles.actions}>
           <GHButton
             label={isLast ? "Let's Go" : "Next"}
-            leftIcon={isLast ? "flag-checkered" : undefined}
+            icon={isLast ? "flag-checkered" : "arrow-right"}
             onPress={next}
           />
         </View>
@@ -154,15 +154,15 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.md,
   },
-  iconContainer: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    backgroundColor: colors.glass.background,
-    borderWidth: 1,
-    borderColor: "rgba(213, 254, 124, 0.2)",
+  iconShell: {
+    width: 92,
+    height: 92,
+    borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.28)",
+    backgroundColor: "rgba(213, 254, 124, 0.08)",
   },
   title: {
     textAlign: "center",

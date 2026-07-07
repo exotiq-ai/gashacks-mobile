@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { calculateBlend } from "@/lib/calculator";
 import { createFillLog } from "@/lib/data";
-import { fixed } from "@/lib/format";
 import { useGarageStore } from "@/lib/store";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useState } from "react";
@@ -87,7 +86,7 @@ export default function CalculatorScreen() {
         pumpGasOctane: 93,
         e85ActualEthanol: Math.round(ethanolFuelPercent * 10),
       });
-      setSaveMessage("Blend saved ✓");
+      setSaveMessage("Blend saved");
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       setSaveMessage(err instanceof Error ? err.message : "Failed to save.");
@@ -113,7 +112,7 @@ export default function CalculatorScreen() {
         pumpGasOctane: 93,
         e85ActualEthanol: Math.round(ethanolFuelPercent * 10),
       }).then(() => {
-        setSaveMessage("Receipt logged ✓");
+        setSaveMessage("Receipt logged");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }).catch(() => {
         setSaveMessage("Failed to save receipt log.");
@@ -255,7 +254,7 @@ export default function CalculatorScreen() {
                     PUMP FIRST
                   </GHText>
                   <GHText style={styles.resultValue}>
-                    {fixed(result.ethanolToAdd, 2)}
+                    {result.ethanolToAdd.toFixed(2)}
                   </GHText>
                   <GHText tone="secondary" variant="caption">
                     gal E85
@@ -267,7 +266,7 @@ export default function CalculatorScreen() {
                     THEN TOP OFF
                   </GHText>
                   <GHText style={styles.resultValue}>
-                    {fixed(result.pumpGasToAdd, 2)}
+                    {result.pumpGasToAdd.toFixed(2)}
                   </GHText>
                   <GHText tone="secondary" variant="caption">
                     gal premium
@@ -279,18 +278,18 @@ export default function CalculatorScreen() {
                   Blend outcome:
                 </GHText>
                 <GHText tone="accent" style={styles.outcomeValue}>
-                  E{fixed(result.resultingMix, 1)}
+                  E{result.resultingMix.toFixed(1)}
                 </GHText>
                 <GHText tone="muted">·</GHText>
                 <GHText tone="accent" style={styles.outcomeValue}>
-                  {fixed(result.octaneRating, 1)} oct
+                  {result.octaneRating.toFixed(1)} oct
                 </GHText>
               </View>
             </>
           ) : (
             <View style={styles.errorBlock}>
               <GHText tone="secondary" variant="body">
-                ⚠️ {result.errorMessage}
+                {result.errorMessage}
               </GHText>
             </View>
           )}
@@ -300,13 +299,14 @@ export default function CalculatorScreen() {
       {/* Actions */}
       <GHButton
         label={saveMessage ?? "Save Blend Configuration"}
+        icon="content-save"
         onPress={() => void saveBlend()}
         loading={saving}
         disabled={!user || !result.canFillToTarget}
       />
       <GHButton
         label="Log from Receipt"
-        leftIcon="camera"
+        icon="receipt-text"
         variant="secondary"
         onPress={() => setShowReceipt(true)}
       />

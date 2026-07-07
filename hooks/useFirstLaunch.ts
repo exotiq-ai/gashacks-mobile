@@ -4,14 +4,51 @@ import * as SecureStore from "expo-secure-store";
 const DISCLAIMER_KEY = "gas_hacks_disclaimer_accepted";
 const ONBOARDING_KEY = "gas_hacks_onboarding_complete";
 
+const inMemoryStore = new Map<string, string>();
+
+function getLocalStorage() {
+  try {
+    if (typeof globalThis.localStorage !== "undefined") {
+      return globalThis.localStorage;
+    }
+  } catch {
+    // Access can fail in restricted browser contexts.
+  }
+  return null;
+}
+
+async function getFirstLaunchItem(key: string) {
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch {
+    const localStorage = getLocalStorage();
+    if (localStorage) return localStorage.getItem(key);
+    return inMemoryStore.get(key) ?? null;
+  }
+}
+
+async function setFirstLaunchItem(key: string, value: string) {
+  try {
+    await SecureStore.setItemAsync(key, value);
+    return;
+  } catch {
+    const localStorage = getLocalStorage();
+    if (localStorage) {
+      localStorage.setItem(key, value);
+      return;
+    }
+    inMemoryStore.set(key, value);
+  }
+}
+
 export function useFirstLaunch() {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState<boolean | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
     Promise.all([
-      SecureStore.getItemAsync(DISCLAIMER_KEY),
-      SecureStore.getItemAsync(ONBOARDING_KEY),
+      getFirstLaunchItem(DISCLAIMER_KEY),
+      getFirstLaunchItem(ONBOARDING_KEY),
     ])
       .then(([disc, onb]) => {
         setDisclaimerAccepted(disc === "true");
@@ -24,12 +61,12 @@ export function useFirstLaunch() {
   }, []);
 
   const acceptDisclaimer = useCallback(async () => {
-    await SecureStore.setItemAsync(DISCLAIMER_KEY, "true");
+    await setFirstLaunchItem(DISCLAIMER_KEY, "true");
     setDisclaimerAccepted(true);
   }, []);
 
   const completeOnboarding = useCallback(async () => {
-    await SecureStore.setItemAsync(ONBOARDING_KEY, "true");
+    await setFirstLaunchItem(ONBOARDING_KEY, "true");
     setOnboardingComplete(true);
   }, []);
 

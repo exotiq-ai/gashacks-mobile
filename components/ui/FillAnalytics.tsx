@@ -2,7 +2,6 @@ import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import type { FillLog } from "@/lib/data";
-import { dollars, fixed } from "@/lib/format";
 import { StyleSheet, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -67,7 +66,7 @@ export function FillAnalytics({ logs }: FillAnalyticsProps) {
         <View style={styles.tilesRow}>
           <View style={styles.tile}>
             <GHText tone="accent" style={styles.tileValue}>
-              {fixed(totalE85, 1)}
+              {totalE85.toFixed(1)}
             </GHText>
             <GHText tone="muted" variant="caption">
               Total E85 gal
@@ -76,7 +75,7 @@ export function FillAnalytics({ logs }: FillAnalyticsProps) {
           <View style={styles.tileDivider} />
           <View style={styles.tile}>
             <GHText tone="accent" style={styles.tileValue}>
-              {dollars(avgCostPerFill, 2)}
+              ${avgCostPerFill.toFixed(2)}
             </GHText>
             <GHText tone="muted" variant="caption">
               Avg per fill
@@ -87,7 +86,7 @@ export function FillAnalytics({ logs }: FillAnalyticsProps) {
             <GHText
               style={[styles.tileValue, { color: estimatedSavings > 0 ? colors.status.success : colors.text.secondary }]}
             >
-              {estimatedSavings > 0 ? `+$${fixed(estimatedSavings, 0)}` : "—"}
+              {estimatedSavings > 0 ? `+$${estimatedSavings.toFixed(0)}` : "—"}
             </GHText>
             <GHText tone="muted" variant="caption">
               Est. savings
@@ -131,7 +130,7 @@ export function FillAnalytics({ logs }: FillAnalyticsProps) {
 
         <View style={styles.footer}>
           <GHText tone="muted" variant="caption">
-            Total spent: {dollars(totalCost, 2)} across {logs.length} fill{logs.length !== 1 ? "s" : ""}
+            Total spent: ${totalCost.toFixed(2)} across {logs.length} fill{logs.length !== 1 ? "s" : ""}
           </GHText>
         </View>
       </GHCard>

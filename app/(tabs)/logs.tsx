@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
 import { applyLogVisibilityLimit } from "@/lib/entitlements";
-import { fixed } from "@/lib/format";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import { useCallback, useMemo, useState } from "react";
@@ -88,7 +87,7 @@ export default function LogsScreen() {
       <GHCard style={styles.logCard}>
         <View style={styles.logHeader}>
           <GHText tone="accent" style={styles.logBlend}>
-            E{fixed(eMix, 0)}
+            E{eMix.toFixed(0)}
           </GHText>
           <GHText tone="muted" variant="caption">
             {formatDate(item.created_at)}
@@ -99,26 +98,26 @@ export default function LogsScreen() {
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               OCTANE
             </GHText>
-            <GHText tone="secondary">{fixed(octane, 1)}</GHText>
+            <GHText tone="secondary">{octane.toFixed(1)}</GHText>
           </View>
           <View style={styles.logDivider} />
           <View style={styles.logStat}>
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               E85
             </GHText>
-            <GHText tone="secondary">{fixed(e85Gal, 1)}g</GHText>
+            <GHText tone="secondary">{e85Gal.toFixed(1)}g</GHText>
           </View>
           <View style={styles.logDivider} />
           <View style={styles.logStat}>
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
               PUMP
             </GHText>
-            <GHText tone="secondary">{fixed(pumpGal, 1)}g</GHText>
+            <GHText tone="secondary">{pumpGal.toFixed(1)}g</GHText>
           </View>
         </View>
         {item.station_name && (
           <View style={styles.stationRow}>
-            <MaterialCommunityIcons name="map-marker" size={12} color={colors.text.muted} />
+            <MaterialCommunityIcons name="map-marker" size={14} color={colors.text.muted} />
             <GHText tone="muted" variant="caption">
               {item.station_name}
             </GHText>
@@ -167,9 +166,7 @@ export default function LogsScreen() {
 
       {!loading && visible.length === 0 ? (
         <View style={styles.emptyState}>
-          <View style={styles.emptyIconContainer}>
-            <MaterialCommunityIcons name="clipboard-text-clock" size={48} color={colors.text.secondary} />
-          </View>
+          <MaterialCommunityIcons name="clipboard-text-clock" size={48} color={colors.text.secondary} />
           <GHText tone="secondary" style={styles.emptyText}>
             {logs.length === 0
               ? "No fills logged yet. Save a blend from the Calculator to start tracking."
@@ -244,26 +241,16 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     gap: spacing.md,
   },
-  emptyIconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: colors.glass.background,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   emptyText: {
     textAlign: "center",
+  },
+  logCard: {
+    gap: spacing.sm,
   },
   stationRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-  },
-  logCard: {
-    gap: spacing.sm,
   },
   logHeader: {
     flexDirection: "row",

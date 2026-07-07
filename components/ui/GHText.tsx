@@ -1,15 +1,15 @@
 import { colors, typography } from "@/constants/theme";
 import { ReactNode } from "react";
-import { StyleSheet, Text, TextStyle } from "react-native";
+import { StyleProp, StyleSheet, Text, TextProps, TextStyle } from "react-native";
 
 type Variant = "title" | "subtitle" | "body" | "caption";
 type Tone = "primary" | "secondary" | "muted" | "accent";
 
-type Props = {
+type Props = TextProps & {
   children: ReactNode;
   variant?: Variant;
   tone?: Tone;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
 };
 
 const variantStyles: Record<Variant, TextStyle> = {
@@ -47,9 +47,13 @@ export function GHText({
   variant = "body",
   tone = "primary",
   style,
+  ...textProps
 }: Props) {
   return (
-    <Text style={[styles.base, variantStyles[variant], toneStyles[tone], style]}>
+    <Text
+      {...textProps}
+      style={[styles.base, variantStyles[variant], toneStyles[tone], style]}
+    >
       {children}
     </Text>
   );

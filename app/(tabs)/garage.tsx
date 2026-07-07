@@ -2,7 +2,6 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import {
@@ -13,12 +12,11 @@ import {
 import { canAddVehicle } from "@/lib/entitlements";
 import { MAKES, getModelsForMake, type VehicleTemplate } from "@/lib/vehicleDb";
 import { useGarageStore } from "@/lib/store";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -85,44 +83,27 @@ export default function GarageScreen() {
   };
 
   const handleAdd = async () => {
+    if (!user) return;
     setSaving(true);
     setError(null);
-
-    let addMake = make;
-    let addModel = model;
-    let addTank = Number(tankCapacity);
-    let addYear = year ? Number(year) : undefined;
-
-    if (addMode === "pick" && selectedTemplate) {
-      addMake = selectedTemplate.make;
-      addModel = selectedTemplate.model;
-      addTank = selectedTemplate.tankGallons;
-    }
-
-    if (!addMake || !addModel || addTank <= 0) {
-      setError("Make, model, and tank size are required.");
-      setSaving(false);
-      return;
-    }
-
-    // In demo mode (no user), save locally only
-    if (!user) {
-      const localVehicle = {
-        id: `local-${Date.now()}`,
-        year: addYear,
-        make: addMake,
-        model: addModel,
-        tankCapacityGallons: addTank,
-        currentTune: tune || undefined,
-      };
-      useGarageStore.getState().addVehicle(localVehicle);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      resetForm();
-      setSaving(false);
-      return;
-    }
-
     try {
+      let addMake = make;
+      let addModel = model;
+      let addTank = Number(tankCapacity);
+      let addYear = year ? Number(year) : undefined;
+
+      if (addMode === "pick" && selectedTemplate) {
+        addMake = selectedTemplate.make;
+        addModel = selectedTemplate.model;
+        addTank = selectedTemplate.tankGallons;
+      }
+
+      if (!addMake || !addModel || addTank <= 0) {
+        setError("Make, model, and tank size are required.");
+        setSaving(false);
+        return;
+      }
+
       const created = await createVehicle({
         userId: user.id,
         year: addYear,
@@ -135,20 +116,7 @@ export default function GarageScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       resetForm();
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Failed to save vehicle.";
-      // Fall back to local save so the user doesn't lose their data
-      const localVehicle = {
-        id: `local-${Date.now()}`,
-        year: addYear,
-        make: addMake,
-        model: addModel,
-        tankCapacityGallons: addTank,
-        currentTune: tune || undefined,
-      };
-      useGarageStore.getState().addVehicle(localVehicle);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setError(`Saved locally (sync failed: ${errMsg})`);
-      resetForm();
+      setError(err instanceof Error ? err.message : "Failed to add vehicle.");
     } finally {
       setSaving(false);
     }
@@ -169,15 +137,10 @@ export default function GarageScreen() {
   const canAdd = canAddVehicle(vehicles.length, entitlements);
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 90 }]}
       showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
     >
       <GHText variant="title" tone="accent">
         Garage
@@ -194,9 +157,7 @@ export default function GarageScreen() {
       {/* Vehicle List */}
       {vehicles.length === 0 && !loading ? (
         <GHCard style={styles.emptyCard}>
-          <View style={styles.emptyIconContainer}>
-            <MaterialCommunityIcons name="car-sports" size={48} color={colors.text.secondary} />
-          </View>
+          <MaterialCommunityIcons name="car-sports" size={48} color={colors.text.secondary} />
           <GHText tone="secondary" style={styles.emptyText}>
             No vehicles yet. Add your ride to get started.
           </GHText>
@@ -236,7 +197,8 @@ export default function GarageScreen() {
       {/* Add Vehicle */}
       {!showAdd ? (
         <GHButton
-          label={canAdd ? "+ Add Vehicle" : "Upgrade to Pro for more slots"}
+          label={canAdd ? "Add Vehicle" : "Upgrade to Pro for more slots"}
+          icon={canAdd ? "plus" : "lock-open-variant"}
           variant={canAdd ? "primary" : "secondary"}
           disabled={!canAdd}
           onPress={() => setShowAdd(true)}
@@ -319,7 +281,7 @@ export default function GarageScreen() {
                             {t.years} · {t.tankGallons} gal{t.engine ? ` · ${t.engine}` : ""}
                           </GHText>
                         </View>
-                        {isSel && <GHText tone="accent">✓</GHText>}
+                        {isSel && <MaterialCommunityIcons name="check-circle" size={20} color={colors.accent.lime} />}
                       </Pressable>
                     );
                   })}
@@ -350,12 +312,14 @@ export default function GarageScreen() {
           <View style={styles.addActions}>
             <GHButton
               label="Cancel"
+              icon="close"
               variant="ghost"
               onPress={resetForm}
               style={{ flex: 1 }}
             />
             <GHButton
               label="Save"
+              icon="content-save"
               onPress={() => void handleAdd()}
               loading={saving}
               disabled={addMode === "pick" ? !selectedTemplate : !make || !model}
@@ -365,7 +329,6 @@ export default function GarageScreen() {
         </GHCard>
       )}
     </ScrollView>
-    </KeyboardAvoidingView>
   );
 }
 
@@ -432,15 +395,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.xl,
   },
-  emptyIconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: colors.glass.background,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    alignItems: "center",
-    justifyContent: "center",
+  emptyIcon: {
+    fontSize: 48,
   },
   emptyText: {
     textAlign: "center",

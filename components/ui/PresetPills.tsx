@@ -1,19 +1,22 @@
 import { colors, spacing, typography } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import type { ComponentProps } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { GHText } from "./GHText";
 
+type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
+
 export type Preset = {
   label: string;
-  icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  icon: IconName;
   targetEthanol: number;
 };
 
 const PRESETS: Preset[] = [
-  { label: "Track Day", icon: "flag-checkered", targetEthanol: 85 },
-  { label: "Daily", icon: "car", targetEthanol: 30 },
-  { label: "Economy", icon: "currency-usd", targetEthanol: 10 },
+  { label: "Track", icon: "flag-checkered", targetEthanol: 85 },
+  { label: "Daily", icon: "road-variant", targetEthanol: 30 },
+  { label: "Economy", icon: "cash", targetEthanol: 10 },
   { label: "Winter", icon: "snowflake", targetEthanol: 20 },
   { label: "E50", icon: "lightning-bolt", targetEthanol: 50 },
 ];

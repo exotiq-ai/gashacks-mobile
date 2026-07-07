@@ -18,8 +18,8 @@ export function SafetyDisclaimer({ visible, onAccept }: Props) {
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.iconContainer}>
-            <MaterialCommunityIcons name="alert-circle" size={48} color={colors.status.warning} />
+          <View style={styles.iconShell}>
+            <MaterialCommunityIcons name="alert-octagon" size={42} color={colors.status.warning} />
           </View>
           <GHText variant="title" tone="accent" style={styles.title}>
             Safety First
@@ -103,9 +103,16 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     gap: spacing.md,
   },
-  iconContainer: {
+  iconShell: {
+    width: 76,
+    height: 76,
+    borderRadius: 22,
+    alignSelf: "center",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(245, 158, 11, 0.35)",
+    backgroundColor: "rgba(245, 158, 11, 0.1)",
   },
   title: {
     textAlign: "center",

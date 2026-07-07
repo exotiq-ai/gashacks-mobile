@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabase";
 import type { Vehicle } from "@/lib/store";
 
+const DEMO_USER_ID = "demo-user";
+const DEMO_VEHICLES_KEY = "gas_hacks_demo_vehicles";
+const DEMO_LOGS_KEY = "gas_hacks_demo_fill_logs";
+
 export type FillLog = {
   id: string;
   user_id: string;
@@ -61,7 +65,44 @@ function mapVehicle(row: any): Vehicle {
   };
 }
 
+function isDemoUser(userId: string) {
+  return userId === DEMO_USER_ID;
+}
+
+function getLocalStorage() {
+  try {
+    if (typeof globalThis.localStorage !== "undefined") {
+      return globalThis.localStorage;
+    }
+  } catch {
+    // Restricted browser contexts can deny access.
+  }
+  return null;
+}
+
+function readDemoJson<T>(key: string, fallback: T): T {
+  const localStorage = getLocalStorage();
+  if (!localStorage) return fallback;
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeDemoJson<T>(key: string, value: T) {
+  const localStorage = getLocalStorage();
+  if (!localStorage) return;
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 export async function fetchVehicles(userId: string): Promise<Vehicle[]> {
+  if (isDemoUser(userId)) {
+    return readDemoJson<Vehicle[]>(DEMO_VEHICLES_KEY, []);
+  }
+
   const { data, error } = await supabase
     .from("vehicles")
     .select("*")
@@ -76,6 +117,22 @@ export async function fetchVehicles(userId: string): Promise<Vehicle[]> {
 }
 
 export async function createVehicle(input: CreateVehicleInput): Promise<Vehicle> {
+  if (isDemoUser(input.userId)) {
+    const vehicles = readDemoJson<Vehicle[]>(DEMO_VEHICLES_KEY, []);
+    const created: Vehicle = {
+      id: `demo-vehicle-${Date.now()}`,
+      year: input.year,
+      make: input.make,
+      model: input.model,
+      trim: input.trim,
+      tankCapacityGallons: input.tankCapacityGallons,
+      currentTune: input.currentTune,
+      isActive: vehicles.length === 0,
+    };
+    writeDemoJson(DEMO_VEHICLES_KEY, [created, ...vehicles]);
+    return created;
+  }
+
   const { data, error } = await supabase
     .from("vehicles")
     .insert({
@@ -99,6 +156,18 @@ export async function createVehicle(input: CreateVehicleInput): Promise<Vehicle>
 }
 
 export async function setActiveVehicle(userId: string, vehicleId: string): Promise<void> {
+  if (isDemoUser(userId)) {
+    const vehicles = readDemoJson<Vehicle[]>(DEMO_VEHICLES_KEY, []);
+    writeDemoJson(
+      DEMO_VEHICLES_KEY,
+      vehicles.map((vehicle) => ({
+        ...vehicle,
+        isActive: vehicle.id === vehicleId,
+      })),
+    );
+    return;
+  }
+
   const { error: resetError } = await supabase
     .from("vehicles")
     .update({ is_active: false })
@@ -120,6 +189,10 @@ export async function setActiveVehicle(userId: string, vehicleId: string): Promi
 }
 
 export async function fetchFillLogs(userId: string): Promise<FillLog[]> {
+  if (isDemoUser(userId)) {
+    return readDemoJson<FillLog[]>(DEMO_LOGS_KEY, []);
+  }
+
   const { data, error } = await supabase
     .from("fill_logs")
     .select("*")
@@ -135,6 +208,30 @@ export async function fetchFillLogs(userId: string): Promise<FillLog[]> {
 }
 
 export async function createFillLog(input: CreateFillLogInput): Promise<void> {
+  if (isDemoUser(input.userId)) {
+    const logs = readDemoJson<FillLog[]>(DEMO_LOGS_KEY, []);
+    const created: FillLog = {
+      id: `demo-log-${Date.now()}`,
+      user_id: input.userId,
+      vehicle_id: input.vehicleId,
+      tank_level_before: input.tankLevelBefore,
+      ethanol_mix_before: input.ethanolMixBefore,
+      target_ethanol_mix: input.targetEthanolMix,
+      resulting_ethanol_mix: input.resultingEthanolMix,
+      resulting_octane: input.resultingOctane,
+      e85_gallons: input.e85Gallons,
+      pump_gas_gallons: input.pumpGasGallons,
+      pump_gas_octane: input.pumpGasOctane,
+      e85_actual_ethanol: input.e85ActualEthanol,
+      station_name: null,
+      user_notes: null,
+      total_cost: null,
+      created_at: new Date().toISOString(),
+    };
+    writeDemoJson(DEMO_LOGS_KEY, [created, ...logs]);
+    return;
+  }
+
   const { error } = await supabase.from("fill_logs").insert({
     user_id: input.userId,
     vehicle_id: input.vehicleId,

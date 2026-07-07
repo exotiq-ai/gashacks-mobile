@@ -29,6 +29,10 @@ export function resolveEntitlements(isPro: boolean): EntitlementSnapshot {
   };
 }
 
+export function shouldUnlockPremiumForTesting(config: { skipAuth: boolean; appEnv: string }) {
+  return config.skipAuth && config.appEnv !== "production";
+}
+
 export function canAddVehicle(currentVehicleCount: number, entitlements: EntitlementSnapshot) {
   return currentVehicleCount < entitlements.maxVehicles;
 }

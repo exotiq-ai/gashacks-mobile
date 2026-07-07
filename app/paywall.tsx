@@ -7,24 +7,26 @@ import { getOfferings, purchasePackage, restorePurchases } from "@/lib/revenueca
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
+import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import type { PurchasesOffering, PurchasesPackage } from "react-native-purchases";
 
 type Plan = "monthly" | "annual";
+type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
 const FEATURES = [
-  { icon: "car-multiple" as const, title: "Unlimited Vehicles", desc: "Add your entire fleet" },
-  { icon: "clipboard-text-clock" as const, title: "Full Log History", desc: "Never lose a fill record" },
-  { icon: "camera" as const, title: "Receipt Scanning", desc: "Auto-log from pump receipts" },
-  { icon: "chart-line" as const, title: "Cost Analytics", desc: "Track savings vs premium gas" },
-  { icon: "map-marker-radius" as const, title: "Station Finder", desc: "All nearby E85 stations" },
-  { icon: "export-variant" as const, title: "Export to CSV", desc: "Download your data anytime" },
-];
+  { icon: "car-multiple", title: "Unlimited Vehicles", desc: "Add your entire fleet" },
+  { icon: "clipboard-text-clock", title: "Full Log History", desc: "Never lose a fill record" },
+  { icon: "receipt-text", title: "Receipt Scanning", desc: "Auto-log from pump receipts" },
+  { icon: "chart-line", title: "Cost Analytics", desc: "Track savings vs premium gas" },
+  { icon: "map-marker-radius", title: "Station Finder", desc: "All nearby E85 stations" },
+  { icon: "file-export", title: "Export to CSV", desc: "Download your data anytime" },
+] satisfies Array<{ icon: IconName; title: string; desc: string }>;
 
 export default function PaywallScreen() {
   const router = useRouter();
-  const { refresh } = useEntitlements();
+  const { refresh, isPro } = useEntitlements();
   const [plan, setPlan] = useState<Plan>("annual");
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -90,7 +92,7 @@ export default function PaywallScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         {/* Hero */}
         <View style={styles.hero}>
-          <MaterialCommunityIcons name="lightning-bolt" size={56} color={colors.accent.lime} />
+          <GHText style={styles.heroEmoji}>⚡</GHText>
           <GHText variant="title" tone="accent">
             Go Pro
           </GHText>
@@ -104,7 +106,11 @@ export default function PaywallScreen() {
           {FEATURES.map((f) => (
             <View key={f.title} style={styles.featureRow}>
               <View style={styles.featureIcon}>
-                <MaterialCommunityIcons name={f.icon} size={22} color={colors.accent.lime} />
+                <MaterialCommunityIcons
+                  name={f.icon}
+                  size={22}
+                  color={colors.accent.lime}
+                />
               </View>
               <View style={styles.featureText}>
                 <GHText tone="primary" style={styles.featureTitle}>
@@ -156,13 +162,21 @@ export default function PaywallScreen() {
 
         {/* CTA */}
         <GHButton
-          label={purchasing ? "Processing..." : `Subscribe — ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`}
-          onPress={() => void handlePurchase()}
+          label={
+            isPro
+              ? "Pro Enabled for Testing"
+              : purchasing
+                ? "Processing..."
+                : `Subscribe — ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`
+          }
+          icon={isPro ? "check-decagram" : "lock-open-variant"}
+          onPress={isPro ? () => router.back() : () => void handlePurchase()}
           loading={purchasing}
         />
 
         <GHButton
           label={restoring ? "Restoring..." : "Restore Purchases"}
+          icon="restore"
           variant="secondary"
           onPress={() => void handleRestore()}
           loading={restoring}
@@ -170,6 +184,7 @@ export default function PaywallScreen() {
 
         <GHButton
           label="Maybe Later"
+          icon="close"
           variant="ghost"
           onPress={() => router.back()}
         />
@@ -216,12 +231,12 @@ const styles = StyleSheet.create({
   featureIcon: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: "rgba(213, 254, 124, 0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(213, 254, 124, 0.15)",
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "rgba(213, 254, 124, 0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(213, 254, 124, 0.18)",
   },
   featureText: {
     flex: 1,

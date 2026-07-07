@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 WebBrowser.maybeCompleteAuthSession();
 const runtimeConfig = getRuntimeConfig();
+const DEMO_USER_ID = "demo-user";
 
 type UseAuthResult = {
   user: User | null;
@@ -36,7 +37,14 @@ export function useAuth(): UseAuthResult {
   useEffect(() => {
     if (skipAuth) {
       setSession(null);
-      setUser(null);
+      setUser({
+        id: DEMO_USER_ID,
+        email: "demo@gashacks.app",
+        app_metadata: {},
+        user_metadata: {},
+        aud: "authenticated",
+        created_at: new Date(0).toISOString(),
+      } as User);
       setLoading(false);
       return;
     }

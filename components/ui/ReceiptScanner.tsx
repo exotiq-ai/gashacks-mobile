@@ -1,10 +1,11 @@
 import { colors, spacing, typography } from "@/constants/theme";
-import { dollars, fixed } from "@/lib/format";
+import { scanReceiptImage } from "@/lib/receiptScanner";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GHButton } from "./GHButton";
 import { GHCard } from "./GHCard";
 import { GHText } from "./GHText";
 import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {
   Alert,
@@ -25,6 +26,9 @@ export type ScannedReceipt = {
   pricePerGalPump: number | null;
   totalCost: number | null;
   stationName: string | null;
+  stationAddress: string | null;
+  purchasedAt: string | null;
+  ethanolPercent: number | null;
 };
 
 type Props = {
@@ -38,6 +42,7 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
   const [mode, setMode] = useState<"camera" | "manual" | "review">("camera");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
 
   // Parsed/editable fields
   const [gallonsE85, setGallonsE85] = useState("");
@@ -46,29 +51,92 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
   const [pricePump, setPricePump] = useState("");
   const [totalCost, setTotalCost] = useState("");
   const [stationName, setStationName] = useState("");
+  const [stationAddress, setStationAddress] = useState("");
+  const [purchasedAt, setPurchasedAt] = useState("");
+  const [ethanolPercent, setEthanolPercent] = useState("");
 
   const reset = () => {
     setMode("camera");
     setImageUri(null);
     setProcessing(false);
+    setScanMessage(null);
     setGallonsE85("");
     setGallonsPump("");
     setPriceE85("");
     setPricePump("");
     setTotalCost("");
     setStationName("");
+    setStationAddress("");
+    setPurchasedAt("");
+    setEthanolPercent("");
   };
 
-  const handleCapture = async () => {
+  const applyScan = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (!asset.base64) {
+      throw new Error("Receipt image was missing scan data.");
+    }
+
+    setImageUri(asset.uri);
+    setProcessing(true);
+    setScanMessage("Reading receipt...");
+    const scanned = await scanReceiptImage({
+      base64: asset.base64,
+      mimeType: asset.mimeType ?? "image/jpeg",
+    });
+
+    setStationName(scanned.stationName ?? "");
+    setStationAddress(scanned.stationAddress ?? "");
+    setPurchasedAt(scanned.purchasedAt ?? "");
+    setGallonsE85(scanned.gallonsE85 != null ? String(scanned.gallonsE85) : "");
+    setGallonsPump(scanned.gallonsPump != null ? String(scanned.gallonsPump) : "");
+    setPriceE85(scanned.pricePerGalE85 != null ? String(scanned.pricePerGalE85) : "");
+    setPricePump(scanned.pricePerGalPump != null ? String(scanned.pricePerGalPump) : "");
+    setTotalCost(scanned.totalCost != null ? String(scanned.totalCost) : "");
+    setEthanolPercent(scanned.ethanolPercent != null ? String(scanned.ethanolPercent) : "");
+    setScanMessage(`AI scan complete. Confidence ${Math.round(scanned.confidence * 100)}%. Review before saving.`);
+    setMode("review");
+  };
+
+  const handlePickImage = async (source: "camera" | "library") => {
     if (!isPro) {
       Alert.alert("Pro Feature", "Receipt scanning is available with Gas Hacks Pro.");
       return;
     }
 
-    // TODO: Integrate expo-camera or expo-image-picker
-    // For now, go straight to manual entry as fallback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setMode("manual");
+    try {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      const permission =
+        source === "camera"
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert("Permission Needed", "Allow photo access to scan a receipt, or enter it manually.");
+        return;
+      }
+
+      const result =
+        source === "camera"
+          ? await ImagePicker.launchCameraAsync({
+              base64: true,
+              quality: 0.82,
+              allowsEditing: false,
+            })
+          : await ImagePicker.launchImageLibraryAsync({
+              base64: true,
+              quality: 0.82,
+              allowsEditing: false,
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            });
+
+      if (result.canceled || !result.assets[0]) return;
+      await applyScan(result.assets[0]);
+    } catch (err) {
+      setScanMessage(err instanceof Error ? err.message : "Receipt scan failed.");
+      setMode("manual");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleConfirm = () => {
@@ -80,6 +148,9 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
       pricePerGalPump: pricePump ? Number(pricePump) : null,
       totalCost: totalCost ? Number(totalCost) : null,
       stationName: stationName || null,
+      stationAddress: stationAddress || null,
+      purchasedAt: purchasedAt || null,
+      ethanolPercent: ethanolPercent ? Number(ethanolPercent) : null,
     });
     reset();
     onClose();
@@ -95,15 +166,12 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
     <Modal visible={visible} animationType="slide" transparent={false}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <View style={styles.headerTitle}>
-            <MaterialCommunityIcons name="camera" size={24} color={colors.accent.lime} />
-            <GHText variant="title" tone="accent">
-              Receipt
-            </GHText>
-          </View>
+          <GHText variant="title" tone="accent">
+            Receipt
+          </GHText>
           <Pressable onPress={() => { reset(); onClose(); }}>
-            <GHText tone="secondary" style={styles.closeBtn}>
-              ✕
+          <GHText tone="secondary" style={styles.closeBtn}>
+              Close
             </GHText>
           </Pressable>
         </View>
@@ -117,21 +185,33 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
             <Animated.View entering={FadeIn.duration(300)}>
               <GHCard style={styles.cameraCard}>
                 <View style={styles.cameraPlaceholder}>
-                  <View style={styles.cameraIconContainer}>
-                    <MaterialCommunityIcons name="camera" size={48} color={colors.text.secondary} />
-                  </View>
+                  <MaterialCommunityIcons name="receipt-text" size={58} color={colors.accent.lime} />
                   <GHText tone="secondary" style={styles.cameraText}>
-                    Take a photo of your pump receipt
+                    Scan a pump receipt
                   </GHText>
                   <GHText tone="muted" variant="caption">
-                    We'll extract gallons, prices, and total automatically
+                    AI extracts station, gallons, prices, date, and total. You review everything before saving.
                   </GHText>
                 </View>
+                {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+                {scanMessage && (
+                  <GHText tone="muted" variant="caption" style={styles.scanMessage}>
+                    {scanMessage}
+                  </GHText>
+                )}
                 <GHButton
-                  label={isPro ? "Scan Receipt" : "Pro Feature"}
-                  leftIcon={isPro ? "camera" : "lock"}
-                  onPress={() => void handleCapture()}
-                  disabled={!isPro}
+                  label={processing ? "Scanning..." : isPro ? "Take Photo" : "Pro Feature"}
+                  icon={isPro ? "camera" : "lock"}
+                  onPress={() => void handlePickImage("camera")}
+                  disabled={!isPro || processing}
+                  loading={processing}
+                />
+                <GHButton
+                  label="Choose Photo"
+                  icon="image-search"
+                  variant="secondary"
+                  onPress={() => void handlePickImage("library")}
+                  disabled={!isPro || processing}
                 />
                 <GHButton
                   label="Enter Manually Instead"
@@ -146,12 +226,30 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
             <Animated.View entering={FadeInDown.duration(300)}>
               <GHCard style={styles.formCard}>
                 <GHText variant="subtitle">Fill Details</GHText>
+                {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+                {scanMessage && (
+                  <GHText tone="muted" variant="caption">
+                    {scanMessage}
+                  </GHText>
+                )}
 
                 <ReceiptField
                   label="Station Name"
                   value={stationName}
                   onChange={setStationName}
                   placeholder="Shell, RaceTrac, etc."
+                />
+                <ReceiptField
+                  label="Station Address"
+                  value={stationAddress}
+                  onChange={setStationAddress}
+                  placeholder="Street, city, state"
+                />
+                <ReceiptField
+                  label="Date / Time"
+                  value={purchasedAt}
+                  onChange={setPurchasedAt}
+                  placeholder="From receipt"
                 />
                 <ReceiptField
                   label="E85 Gallons"
@@ -183,11 +281,19 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
                   numeric
                   prefix="$"
                 />
+                <ReceiptField
+                  label="Ethanol Content"
+                  value={ethanolPercent}
+                  onChange={setEthanolPercent}
+                  placeholder="85"
+                  numeric
+                  suffix="%"
+                />
 
                 <View style={styles.totalRow}>
                   <GHText tone="secondary">Estimated Total</GHText>
                   <GHText tone="accent" style={styles.totalValue}>
-                    {dollars(computedTotal, 2)}
+                    ${computedTotal.toFixed(2)}
                   </GHText>
                 </View>
 
@@ -195,7 +301,7 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
                   label="Actual Total (override)"
                   value={totalCost}
                   onChange={setTotalCost}
-                  placeholder={fixed(computedTotal, 2)}
+                  placeholder={computedTotal.toFixed(2)}
                   numeric
                   prefix="$"
                 />
@@ -227,6 +333,7 @@ function ReceiptField({
   placeholder,
   numeric,
   prefix,
+  suffix,
 }: {
   label: string;
   value: string;
@@ -234,6 +341,7 @@ function ReceiptField({
   placeholder?: string;
   numeric?: boolean;
   prefix?: string;
+  suffix?: string;
 }) {
   return (
     <View style={fieldStyles.container}>
@@ -254,6 +362,11 @@ function ReceiptField({
           keyboardType={numeric ? "decimal-pad" : "default"}
           style={[fieldStyles.input, prefix ? fieldStyles.inputWithPrefix : null]}
         />
+        {suffix && (
+          <GHText tone="muted" style={fieldStyles.suffix}>
+            {suffix}
+          </GHText>
+        )}
       </View>
     </View>
   );
@@ -274,6 +387,12 @@ const fieldStyles = StyleSheet.create({
   prefix: {
     position: "absolute",
     left: 12,
+    zIndex: 1,
+    fontSize: 16,
+  },
+  suffix: {
+    position: "absolute",
+    right: 12,
     zIndex: 1,
     fontSize: 16,
   },
@@ -306,11 +425,6 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingTop: 60,
   },
-  headerTitle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
   closeBtn: {
     fontSize: 24,
     padding: spacing.sm,
@@ -330,21 +444,23 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.xl,
   },
-  cameraIconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.glass.background,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    alignItems: "center",
-    justifyContent: "center",
+  cameraIcon: {
+    fontSize: 64,
   },
   cameraText: {
     textAlign: "center",
   },
   formCard: {
     gap: spacing.md,
+  },
+  previewImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 12,
+    backgroundColor: colors.background.tertiary,
+  },
+  scanMessage: {
+    textAlign: "center",
   },
   totalRow: {
     flexDirection: "row",

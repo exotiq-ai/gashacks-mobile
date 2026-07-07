@@ -31,7 +31,7 @@ export default function TermsScreen() {
         </GHText>
 
         <GHText variant="subtitle" style={styles.heading}>
-          ⚠️ Safety Disclaimer
+          Safety Disclaimer
         </GHText>
         <GHText tone="secondary" style={styles.body}>
           Gas Hacks is for informational purposes only. Calculations are

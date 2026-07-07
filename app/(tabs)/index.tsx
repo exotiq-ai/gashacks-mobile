@@ -8,7 +8,6 @@ import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { fetchFillLogs, type FillLog } from "@/lib/data";
-import { fixed } from "@/lib/format";
 import { useGarageStore } from "@/lib/store";
 import { Redirect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -43,8 +42,8 @@ export default function HubScreen() {
     return <Redirect href="/auth" />;
   }
 
-  const lastEthanol = lastLog?.resulting_ethanol_mix != null ? lastLog.resulting_ethanol_mix / 10 : 0;
-  const lastOctane = lastLog?.resulting_octane != null ? lastLog.resulting_octane / 10 : 0;
+  const lastEthanol = lastLog ? lastLog.resulting_ethanol_mix / 10 : 0;
+  const lastOctane = lastLog ? lastLog.resulting_octane / 10 : 0;
 
   return (
     <ScrollView
@@ -77,8 +76,8 @@ export default function HubScreen() {
           <View style={styles.gridItem}>
             <TelemetryDial
               label="Last Blend"
-              value={lastLog ? `E${fixed(lastEthanol, 0)}` : "—"}
-              caption={lastLog ? `${fixed(lastOctane, 1)} oct` : "No logs yet"}
+              value={lastLog ? `E${lastEthanol.toFixed(0)}` : "—"}
+              caption={lastLog ? `${lastOctane.toFixed(1)} oct` : "No logs yet"}
             />
           </View>
           <View style={styles.gridItem}>
@@ -128,12 +127,12 @@ export default function HubScreen() {
           <GHText variant="subtitle">Quick Actions</GHText>
           <GHButton
             label="Open Calculator"
-            leftIcon="calculator-variant"
+            icon="calculator-variant"
             onPress={() => router.push("/(tabs)/calculator")}
           />
           <GHButton
             label="View Fill Logs"
-            leftIcon="clipboard-text-clock"
+            icon="clipboard-text-clock"
             variant="secondary"
             onPress={() => router.push("/(tabs)/logs")}
           />

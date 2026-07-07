@@ -1,6 +1,5 @@
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
-import { fixed } from "@/lib/format";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRef } from "react";
@@ -49,9 +48,9 @@ function BlendCardContent({
 
       {/* Blend result */}
       <View style={styles.blendRow}>
-        <GHText style={styles.blendValue}>E{fixed(blendPercent, 0)}</GHText>
+        <GHText style={styles.blendValue}>E{blendPercent.toFixed(0)}</GHText>
         <View style={styles.blendMeta}>
-          <GHText style={styles.octaneValue}>{fixed(octane, 1)}</GHText>
+          <GHText style={styles.octaneValue}>{octane.toFixed(1)}</GHText>
           <GHText tone="muted" variant="caption">
             octane
           </GHText>
@@ -61,14 +60,14 @@ function BlendCardContent({
       {/* Fill breakdown */}
       <View style={styles.fillRow}>
         <View style={styles.fillBlock}>
-          <GHText style={styles.fillValue}>{fixed(e85Gallons, 2)}</GHText>
+          <GHText style={styles.fillValue}>{e85Gallons.toFixed(2)}</GHText>
           <GHText tone="muted" variant="caption">
             gal E85
           </GHText>
         </View>
         <View style={styles.fillSep} />
         <View style={styles.fillBlock}>
-          <GHText style={styles.fillValue}>{fixed(pumpGasGallons, 2)}</GHText>
+          <GHText style={styles.fillValue}>{pumpGasGallons.toFixed(2)}</GHText>
           <GHText tone="muted" variant="caption">
             gal premium
           </GHText>
@@ -99,7 +98,7 @@ export function ShareBlendCard(props: ShareBlendCardProps) {
 
       await Share.share({
         url: uri,
-        message: `E${fixed(props.blendPercent, 0)} blend · ${fixed(props.octane, 1)} octane — built with Gas Hacks`,
+        message: `E${props.blendPercent.toFixed(0)} blend · ${props.octane.toFixed(1)} octane — built with Gas Hacks`,
       });
     } catch {
       Alert.alert("Share Failed", "Could not capture the blend card.");

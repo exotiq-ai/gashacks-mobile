@@ -1,6 +1,9 @@
 import { OnboardingWalkthrough } from "@/components/ui/OnboardingWalkthrough";
 import { SafetyDisclaimer } from "@/components/ui/SafetyDisclaimer";
+import { useAuth } from "@/hooks/useAuth";
 import { useFirstLaunch } from "@/hooks/useFirstLaunch";
+import { fetchVehicles } from "@/lib/data";
+import { useGarageStore } from "@/lib/store";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import {
   Inter_300Light,
@@ -79,14 +82,30 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <ThemeProvider value={DarkTheme}>
+      <GarageBootstrap />
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         <Stack.Screen name="privacy" options={{ headerShown: false }} />
         <Stack.Screen name="terms" options={{ headerShown: false }} />
         <Stack.Screen name="paywall" options={{ presentation: "modal", headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );
+}
+
+function GarageBootstrap() {
+  const { user } = useAuth();
+  const setVehicles = useGarageStore((state) => state.setVehicles);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchVehicles(user.id)
+      .then(setVehicles)
+      .catch(() => {
+        // Garage screens show their own load errors; the bootstrap stays quiet.
+      });
+  }, [setVehicles, user?.id]);
+
+  return null;
 }

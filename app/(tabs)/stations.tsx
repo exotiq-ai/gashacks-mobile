@@ -3,13 +3,10 @@ import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { PremiumGate } from "@/components/ui/PremiumGate";
 import { colors, spacing, typography } from "@/constants/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEntitlements } from "@/hooks/useEntitlements";
-import { fixed } from "@/lib/format";
 import { buildMapsUrl, fetchNearbyE85Stations, getDistanceBadgeColor, type Station } from "@/lib/stations";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActionSheetIOS,
@@ -19,79 +16,86 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const RADIUS_OPTIONS = [10, 25, 50, 100];
 
 export default function StationsScreen() {
   const { isPro, entitlements } = useEntitlements();
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(false);
   const [radiusMiles, setRadiusMiles] = useState(25);
   const [locationLabel, setLocationLabel] = useState<string | null>(null);
+  const [manualLocation, setManualLocation] = useState("");
   const [searched, setSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = useCallback(async () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setLoading(true);
     setSearched(true);
+    setError(null);
     try {
-      let lat: number;
-      let lng: number;
-      let label = "Your location";
-
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert(
-            "Location Required",
-            "Enable location access to find nearby E85 stations. Using Denver, CO as fallback.",
-            [
-              { text: "Cancel", style: "cancel" },
-              { text: "Open Settings", onPress: () => Linking.openSettings() },
-            ],
-          );
-          // Fallback to Denver, CO for demo
-          lat = 39.7392;
-          lng = -104.9903;
-          label = "Denver, CO (demo)";
-        } else {
-          const loc = await Location.getCurrentPositionAsync({
-            accuracy: Location.Accuracy.Balanced,
-          });
-          lat = loc.coords.latitude;
-          lng = loc.coords.longitude;
-
-          try {
-            const [geo] = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-            label = geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location";
-          } catch {
-            // Reverse geocode failed — no big deal
-          }
-        }
-      } catch {
-        // Location module not available (preview build) — use fallback
-        lat = 39.7392;
-        lng = -104.9903;
-        label = "Denver, CO (demo)";
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setError("Location access was blocked. Search by city or ZIP instead.");
+        return;
       }
 
-      setLocationLabel(label);
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
 
-      const results = await fetchNearbyE85Stations(lat, lng, radiusMiles);
+      const [geo] = await Location.reverseGeocodeAsync({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      });
+      setLocationLabel(geo ? `${geo.city ?? ""}, ${geo.region ?? ""}`.trim().replace(/^,\s*/, "") : "Your location");
+
+      const results = await fetchNearbyE85Stations(
+        loc.coords.latitude,
+        loc.coords.longitude,
+        radiusMiles,
+      );
       setStations(results);
     } catch (err) {
-      Alert.alert("Error", err instanceof Error ? err.message : "Failed to fetch stations.");
+      setError(err instanceof Error ? err.message : "Failed to fetch stations.");
     } finally {
       setLoading(false);
     }
   }, [radiusMiles]);
+
+  const handleManualSearch = useCallback(async () => {
+    const location = manualLocation.trim();
+    if (!location) {
+      setError("Enter a city, state, or ZIP code.");
+      return;
+    }
+
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoading(true);
+    setSearched(true);
+    setError(null);
+    try {
+      const results = await fetchNearbyE85Stations({
+        location,
+        radiusMiles,
+      });
+      setLocationLabel(location);
+      setStations(results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch stations.");
+    } finally {
+      setLoading(false);
+    }
+  }, [manualLocation, radiusMiles]);
 
   const handleNavigate = (station: Station) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -166,12 +170,42 @@ export default function StationsScreen() {
         </View>
         <GHButton
           label={loading ? "Locating..." : "Find E85 Near Me"}
+          icon="crosshairs-gps"
           onPress={() => void handleSearch()}
+          loading={loading}
+        />
+        <View style={styles.manualSearch}>
+          <MaterialCommunityIcons
+            name="map-search"
+            size={18}
+            color={colors.text.secondary}
+          />
+          <TextInput
+            value={manualLocation}
+            onChangeText={setManualLocation}
+            placeholder="City, state, or ZIP"
+            placeholderTextColor={colors.text.muted}
+            returnKeyType="search"
+            autoCapitalize="words"
+            style={styles.locationInput}
+            onSubmitEditing={() => void handleManualSearch()}
+          />
+        </View>
+        <GHButton
+          label="Search This Area"
+          icon="magnify"
+          variant="secondary"
+          onPress={() => void handleManualSearch()}
           loading={loading}
         />
         {locationLabel && (
           <GHText tone="muted" variant="caption" style={styles.locationLabel}>
             Near: {locationLabel}
+          </GHText>
+        )}
+        {error && (
+          <GHText variant="caption" style={styles.errorText}>
+            {error}
           </GHText>
         )}
       </GHCard>
@@ -186,9 +220,11 @@ export default function StationsScreen() {
 
       {!loading && searched && stations.length === 0 && (
         <GHCard style={styles.emptyCard}>
-          <View style={styles.emptyIconContainer}>
-            <MaterialCommunityIcons name="gas-station" size={48} color={colors.text.secondary} />
-          </View>
+          <MaterialCommunityIcons
+            name="gas-station-off"
+            size={40}
+            color={colors.text.secondary}
+          />
           <GHText variant="subtitle" style={{ textAlign: "center" }}>
             No stations found
           </GHText>
@@ -222,7 +258,7 @@ export default function StationsScreen() {
                   <GHText
                     style={[styles.distanceText, { color: getDistanceBadgeColor(station.distanceMiles) }]}
                   >
-                    {fixed(station.distanceMiles, 1)}mi
+                    {station.distanceMiles.toFixed(1)}mi
                   </GHText>
                 </View>
               </View>
@@ -259,7 +295,7 @@ export default function StationsScreen() {
             {stations.slice(entitlements.maxStationsVisible, entitlements.maxStationsVisible + 2).map((s) => (
               <View key={s.id} style={styles.blurStation}>
                 <GHText style={styles.stationName}>{s.name}</GHText>
-                <GHText tone="secondary" variant="caption">{fixed(s.distanceMiles, 1)}mi away</GHText>
+                <GHText tone="secondary" variant="caption">{s.distanceMiles.toFixed(1)}mi away</GHText>
               </View>
             ))}
           </GHCard>
@@ -308,6 +344,28 @@ const styles = StyleSheet.create({
   locationLabel: {
     textAlign: "center",
   },
+  manualSearch: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.glass.border,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    minHeight: 48,
+  },
+  locationInput: {
+    flex: 1,
+    color: colors.text.primary,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: 16,
+    paddingVertical: spacing.sm,
+  },
+  errorText: {
+    color: colors.status.warning,
+    textAlign: "center",
+  },
   loadingRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -319,16 +377,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     paddingVertical: spacing.xl,
-  },
-  emptyIconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: colors.glass.background,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-    alignItems: "center",
-    justifyContent: "center",
   },
   stationCard: {
     gap: spacing.sm,
