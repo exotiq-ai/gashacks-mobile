@@ -36,6 +36,7 @@ describe("runtime config", () => {
     vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
     vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "");
     vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "");
+    vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "");
     vi.stubEnv("EXPO_PUBLIC_REVENUECAT_IOS_KEY", "");
     vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY", "");
 
@@ -46,6 +47,7 @@ describe("runtime config", () => {
       expect.arrayContaining([
         "EXPO_PUBLIC_RECEIPT_SCAN_API_URL is missing",
         "EXPO_PUBLIC_STATIONS_API_URL is missing",
+        "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL is missing",
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY is missing",
         "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY is missing",
       ]),

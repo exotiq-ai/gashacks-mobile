@@ -50,6 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    accountDeleteApiUrl: process.env.EXPO_PUBLIC_ACCOUNT_DELETE_API_URL,
   },
   experiments: {
     typedRoutes: true,

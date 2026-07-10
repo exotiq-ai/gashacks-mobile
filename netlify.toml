@@ -8,6 +8,7 @@
   EXPO_PUBLIC_APP_ENV = "preview"
   EXPO_PUBLIC_SKIP_AUTH = "true"
   EXPO_PUBLIC_RECEIPT_SCAN_API_URL = "/.netlify/functions/receipt-scan"
+  EXPO_PUBLIC_ACCOUNT_DELETE_API_URL = "/.netlify/functions/delete-account"
 
 [[redirects]]
   from = "/*"

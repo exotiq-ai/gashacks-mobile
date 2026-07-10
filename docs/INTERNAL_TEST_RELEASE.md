@@ -24,6 +24,7 @@ Required keys:
 - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
 - `EXPO_PUBLIC_RECEIPT_SCAN_API_URL`
 - `EXPO_PUBLIC_STATIONS_API_URL`
+- `EXPO_PUBLIC_ACCOUNT_DELETE_API_URL`
 - `EXPO_PUBLIC_REVENUECAT_IOS_KEY`
 - `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`
 - `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`
@@ -31,6 +32,7 @@ Required keys:
 Server-side Netlify environment variables:
 - `OPENAI_API_KEY` for receipt scanning
 - `NREL_API_KEY` for station lookup
+- `SUPABASE_SERVICE_ROLE_KEY` for full account deletion
 
 ## 3) Local validation before cloud build
 

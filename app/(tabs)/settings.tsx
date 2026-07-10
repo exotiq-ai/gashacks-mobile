@@ -4,6 +4,7 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
+import { deleteAccountWithToken } from "@/lib/accountDeletion";
 import { restorePurchases } from "@/lib/revenuecat";
 import { supabase } from "@/lib/supabase";
 import * as Haptics from "expo-haptics";
@@ -23,7 +24,7 @@ import Constants from "expo-constants";
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
 export default function SettingsScreen() {
-  const { user, signOut } = useAuth();
+  const { user, session, signOut } = useAuth();
   const { isPro, refresh } = useEntitlements();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -61,8 +62,12 @@ export default function SettingsScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
-              // Delete user data via Supabase (RLS cascades)
-              if (user) {
+              if (session?.access_token) {
+                const result = await deleteAccountWithToken(session.access_token);
+                if (!result.success) {
+                  throw new Error(result.error ?? "Failed to delete account.");
+                }
+              } else if (user) {
                 await supabase.from("fill_logs").delete().eq("user_id", user.id);
                 await supabase.from("vehicles").delete().eq("user_id", user.id);
                 await supabase.from("favorite_stations").delete().eq("user_id", user.id);
@@ -70,8 +75,11 @@ export default function SettingsScreen() {
               }
               await signOut();
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } catch {
-              Alert.alert("Error", "Failed to delete account. Please try again.");
+            } catch (err) {
+              Alert.alert(
+                "Error",
+                err instanceof Error ? err.message : "Failed to delete account. Please try again.",
+              );
             } finally {
               setDeleting(false);
             }

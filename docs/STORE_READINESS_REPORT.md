@@ -34,6 +34,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Disabled the paywall purchase CTA when RevenueCat offerings are unavailable.
 - Removed hardcoded subscription price copy from Settings.
 - Added safe public EAS variables for development, preview, and production environments where values were known.
+- Added a server-backed account deletion function that verifies the user's Supabase session and deletes the auth user with a service-role key.
 
 ## Needs External Configuration
 
@@ -45,6 +46,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Configure Netlify server-side variables:
   - `OPENAI_API_KEY`
   - `NREL_API_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
 - Confirm Supabase auth providers and redirect URLs for web, iOS, and Android.
 - Confirm Apple Sign In capability for `com.exotiq.gashacks` and service configuration `G39773LD27.com.exotiq.gashacks`.
 - Configure RevenueCat products, offerings, entitlements, sandbox testers, and App Store / Play Store integrations.
@@ -77,7 +79,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 
 ## Known Risks
 
-- Account deletion currently deletes app data from Supabase tables and signs out. Full Supabase auth user deletion may require a privileged backend endpoint before App Review accepts the flow as complete deletion.
+- Account deletion now has a full backend path, but it still needs real-device verification after `SUPABASE_SERVICE_ROLE_KEY` is configured in Netlify.
 - Production EAS receipt and station URLs currently point at the preview Netlify domain. Replace with a production/custom domain before public launch.
 - Local iOS EAS pre-build inspection is blocked on this machine because `fastlane` is not installed in PATH.
 - Local npm audit still reports 11 moderate `uuid` findings through Expo tooling. `npm audit fix --force` would downgrade Expo to 46, so this needs Expo/upstream review instead of the forced fix.

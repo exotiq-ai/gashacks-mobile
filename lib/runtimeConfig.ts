@@ -5,6 +5,7 @@ export type RuntimeConfig = {
   googleWebClientId: string;
   receiptScanApiUrl: string;
   stationsApiUrl: string;
+  accountDeleteApiUrl: string;
   revenueCatIosKey: string;
   revenueCatAndroidKey: string;
   revenueCatEntitlementId: string;
@@ -24,6 +25,8 @@ type ConfigHealth = {
   receiptScanApiUrlLooksValid: boolean;
   stationsApiUrlPresent: boolean;
   stationsApiUrlLooksValid: boolean;
+  accountDeleteApiUrlPresent: boolean;
+  accountDeleteApiUrlLooksValid: boolean;
   revenueCatIosKeyPresent: boolean;
   revenueCatAndroidKeyPresent: boolean;
   revenueCatEntitlementIdPresent: boolean;
@@ -69,6 +72,7 @@ function readEnv() {
     googleWebClientId: envOrDefault(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, "", production),
     receiptScanApiUrl: envOrDefault(process.env.EXPO_PUBLIC_RECEIPT_SCAN_API_URL, "", production),
     stationsApiUrl: envOrDefault(process.env.EXPO_PUBLIC_STATIONS_API_URL, "", production),
+    accountDeleteApiUrl: envOrDefault(process.env.EXPO_PUBLIC_ACCOUNT_DELETE_API_URL, "", production),
     revenueCatIosKey: envOrDefault(process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY, "", production),
     revenueCatAndroidKey: envOrDefault(process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY, "", production),
     revenueCatEntitlementId:
@@ -96,6 +100,8 @@ export function getConfigHealth(): ConfigHealth {
     receiptScanApiUrlLooksValid: !env.receiptScanApiUrl || looksLikeHttpsUrl(env.receiptScanApiUrl),
     stationsApiUrlPresent: Boolean(env.stationsApiUrl),
     stationsApiUrlLooksValid: !env.stationsApiUrl || looksLikeHttpsUrl(env.stationsApiUrl),
+    accountDeleteApiUrlPresent: Boolean(env.accountDeleteApiUrl),
+    accountDeleteApiUrlLooksValid: !env.accountDeleteApiUrl || looksLikeHttpsUrl(env.accountDeleteApiUrl),
     revenueCatIosKeyPresent: Boolean(env.revenueCatIosKey),
     revenueCatAndroidKeyPresent: Boolean(env.revenueCatAndroidKey),
     revenueCatEntitlementIdPresent: Boolean(env.revenueCatEntitlementId),
@@ -119,6 +125,8 @@ export function getConfigHealth(): ConfigHealth {
       health.receiptScanApiUrlLooksValid &&
       health.stationsApiUrlPresent &&
       health.stationsApiUrlLooksValid &&
+      health.accountDeleteApiUrlPresent &&
+      health.accountDeleteApiUrlLooksValid &&
       health.revenueCatIosKeyPresent &&
       health.revenueCatAndroidKeyPresent &&
       health.revenueCatEntitlementIdPresent
@@ -136,6 +144,7 @@ export function getRuntimeConfig(): RuntimeConfig {
     googleWebClientId: env.googleWebClientId,
     receiptScanApiUrl: env.receiptScanApiUrl,
     stationsApiUrl: env.stationsApiUrl,
+    accountDeleteApiUrl: env.accountDeleteApiUrl,
     revenueCatIosKey: env.revenueCatIosKey,
     revenueCatAndroidKey: env.revenueCatAndroidKey,
     revenueCatEntitlementId: env.revenueCatEntitlementId,
@@ -171,6 +180,12 @@ export function getConfigIssues(): string[] {
   }
   if (health.stationsApiUrlPresent && !health.stationsApiUrlLooksValid) {
     issues.push("EXPO_PUBLIC_STATIONS_API_URL must start with https://");
+  }
+  if (health.production && !health.accountDeleteApiUrlPresent) {
+    issues.push("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL is missing");
+  }
+  if (health.accountDeleteApiUrlPresent && !health.accountDeleteApiUrlLooksValid) {
+    issues.push("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must start with https://");
   }
   if (health.production && !health.revenueCatIosKeyPresent) {
     issues.push("EXPO_PUBLIC_REVENUECAT_IOS_KEY is missing");
