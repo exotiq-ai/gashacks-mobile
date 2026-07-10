@@ -41,6 +41,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added safe public Netlify preview build variables for Supabase URL, Google web OAuth client ID, station/receipt/account-deletion function URLs, and the RevenueCat entitlement ID.
 - Disabled committed Netlify preview skip-auth so deployed previews use the real auth path instead of silently entering demo mode.
 - Allowed relative Netlify function URLs for non-production web previews while keeping absolute `https://` API URL requirements for production releases.
+- Consolidated Expo native metadata into `app.config.ts`, removed stale `app.json`, preserved EAS Updates runtime settings, and changed the splash background to dark to match the app launch experience.
+- Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
 
 ## Needs External Configuration
 

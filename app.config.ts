@@ -8,7 +8,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "gashacksmobile",
   version: "1.0.0",
   orientation: "portrait",
+  icon: "./assets/images/icon.png",
   userInterfaceStyle: "dark",
+  splash: {
+    image: "./assets/images/splash-icon.png",
+    resizeMode: "contain",
+    backgroundColor: "#0a0a0a",
+  },
   plugins: [
     "expo-router",
     "expo-secure-store",
@@ -51,6 +57,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     accountDeleteApiUrl: process.env.EXPO_PUBLIC_ACCOUNT_DELETE_API_URL,
+  },
+  runtimeVersion: {
+    policy: "appVersion",
+  },
+  updates: {
+    url: "https://u.expo.dev/a25bec27-cf5c-4748-9c85-2e13fd4087b0",
   },
   experiments: {
     typedRoutes: true,
