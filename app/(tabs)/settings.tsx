@@ -130,7 +130,7 @@ export default function SettingsScreen() {
               Upgrade to Pro for unlimited vehicles, full log history, station finder, and more.
             </GHText>
             <GHButton
-              label="Upgrade to Pro — $2.99/mo"
+              label="Upgrade to Pro"
               icon="lock-open-variant"
               onPress={() => {
                 void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

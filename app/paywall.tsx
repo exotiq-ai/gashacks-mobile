@@ -31,9 +31,13 @@ export default function PaywallScreen() {
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [offeringLoaded, setOfferingLoaded] = useState(false);
 
   useEffect(() => {
-    getOfferings().then(setOffering).catch(() => {});
+    getOfferings()
+      .then(setOffering)
+      .catch(() => {})
+      .finally(() => setOfferingLoaded(true));
   }, []);
 
   const getPackage = (): PurchasesPackage | null => {
@@ -85,6 +89,17 @@ export default function PaywallScreen() {
 
   const monthlyPrice = offering?.monthly?.product.priceString ?? "$2.99";
   const annualPrice = offering?.annual?.product.priceString ?? "$19.99";
+  const selectedPackage = getPackage();
+  const subscriptionsUnavailable = offeringLoaded && !selectedPackage;
+  const ctaLabel = isPro
+    ? "You're Pro"
+    : purchasing
+      ? "Processing..."
+      : subscriptionsUnavailable
+        ? "Subscriptions Unavailable"
+        : offeringLoaded
+          ? `Subscribe - ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`
+          : "Loading Subscriptions...";
 
   return (
     <>
@@ -164,17 +179,23 @@ export default function PaywallScreen() {
 
         {/* CTA */}
         <GHButton
-          label={
-            isPro
-              ? "Pro Enabled for Testing"
-              : purchasing
-                ? "Processing..."
-                : `Subscribe — ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`
-          }
+          label={ctaLabel}
           icon={isPro ? "check-decagram" : "lock-open-variant"}
           onPress={isPro ? () => router.back() : () => void handlePurchase()}
+          disabled={!isPro && (!offeringLoaded || subscriptionsUnavailable)}
           loading={purchasing}
         />
+
+        {subscriptionsUnavailable && (
+          <GHCard style={styles.unavailableCard}>
+            <GHText tone="secondary" style={styles.unavailableTitle}>
+              Subscriptions are not available right now.
+            </GHText>
+            <GHText tone="muted" variant="caption" style={styles.unavailableText}>
+              Check your connection and try restore, or come back in a minute.
+            </GHText>
+          </GHCard>
+        )}
 
         <GHButton
           label={restoring ? "Restoring..." : "Restore Purchases"}
@@ -294,5 +315,16 @@ const styles = StyleSheet.create({
   legal: {
     textAlign: "center",
     lineHeight: 18,
+  },
+  unavailableCard: {
+    gap: spacing.xs,
+    borderColor: "rgba(245, 158, 11, 0.35)",
+  },
+  unavailableTitle: {
+    textAlign: "center",
+    fontFamily: typography.fontFamily.semibold,
+  },
+  unavailableText: {
+    textAlign: "center",
   },
 });

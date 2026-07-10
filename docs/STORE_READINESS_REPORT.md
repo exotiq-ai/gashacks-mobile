@@ -13,6 +13,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e`
+- EAS archive inspection succeeds for iOS simulator and Android preview profiles.
+- EAS Android preview pre-build inspection succeeds.
 
 ## Improvements Completed
 
@@ -28,23 +30,21 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Aligned Expo SDK package versions so `expo-doctor` passes.
 - Added Playwright E2E smoke coverage for onboarding, core tabs, paywall restore visibility, station manual search, and settings/legal/account deletion affordances.
 - Updated env examples and internal test release runbook with required native release variables.
+- Removed user-facing testing language from the paywall and station fallback states.
+- Disabled the paywall purchase CTA when RevenueCat offerings are unavailable.
+- Removed hardcoded subscription price copy from Settings.
+- Added safe public EAS variables for development, preview, and production environments where values were known.
 
 ## Needs External Configuration
 
 - Rotate any GitHub, Expo, Supabase, RevenueCat, OpenAI, and NREL keys that were pasted into chat.
-- Configure EAS environment variables for preview and production:
-  - `EXPO_PUBLIC_SUPABASE_URL`
-  - `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-  - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
-  - `EXPO_PUBLIC_RECEIPT_SCAN_API_URL`
-  - `EXPO_PUBLIC_STATIONS_API_URL`
-  - `EXPO_PUBLIC_REVENUECAT_IOS_KEY`
-  - `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY`
-  - `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`
+- Configure remaining EAS environment variables after key rotation:
+  - `EXPO_PUBLIC_SUPABASE_ANON_KEY` in production
+  - `EXPO_PUBLIC_REVENUECAT_IOS_KEY` in preview and production
+  - `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in preview and production
 - Configure Netlify server-side variables:
   - `OPENAI_API_KEY`
   - `NREL_API_KEY`
-- Replace the local invalid Google OAuth client ID. The export currently logs the runtime warning correctly.
 - Confirm Supabase auth providers and redirect URLs for web, iOS, and Android.
 - Confirm Apple Sign In capability for `com.exotiq.gashacks` and service configuration `G39773LD27.com.exotiq.gashacks`.
 - Configure RevenueCat products, offerings, entitlements, sandbox testers, and App Store / Play Store integrations.
@@ -78,6 +78,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Known Risks
 
 - Account deletion currently deletes app data from Supabase tables and signs out. Full Supabase auth user deletion may require a privileged backend endpoint before App Review accepts the flow as complete deletion.
-- Production builds require absolute receipt and station API URLs. Native apps cannot use Netlify relative paths.
-- Local npm audit still reports dependency vulnerabilities after Expo alignment. Review before production release, especially anything reachable in deployed server functions.
+- Production EAS receipt and station URLs currently point at the preview Netlify domain. Replace with a production/custom domain before public launch.
+- Local iOS EAS pre-build inspection is blocked on this machine because `fastlane` is not installed in PATH.
+- Local npm audit still reports 11 moderate `uuid` findings through Expo tooling. `npm audit fix --force` would downgrade Expo to 46, so this needs Expo/upstream review instead of the forced fix.
 - The Playwright E2E suite covers web smoke flows only. Native behavior still needs simulator/device validation.

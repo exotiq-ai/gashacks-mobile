@@ -26,6 +26,7 @@ test("renders paywall restore path without configured products", async ({ page }
 
   await expect(page.getByText("Go Pro")).toBeVisible();
   await expect(page.getByText(/Restore Purchases/)).toBeVisible();
+  await expect(page.getByText("Pro Enabled for Testing")).toHaveCount(0);
 });
 
 test("station finder accepts manual searches and shows a result state", async ({ page }) => {

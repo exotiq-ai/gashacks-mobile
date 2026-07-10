@@ -82,7 +82,7 @@ export default function StationsScreen() {
       });
       setLocationLabel(FALLBACK_LOCATION.label);
       setStations(fallback);
-      setError("Live station lookup failed. Showing curated E85 options for testing.");
+      setError("Live station lookup failed. Showing curated E85 options.");
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,7 @@ export default function StationsScreen() {
       });
       setLocationLabel(FALLBACK_LOCATION.label);
       setStations(fallback);
-      setError("Live station lookup failed. Showing curated E85 options for testing.");
+      setError("Live station lookup failed. Showing curated E85 options.");
     } finally {
       setLoading(false);
     }
