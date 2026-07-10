@@ -44,6 +44,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Consolidated Expo native metadata into `app.config.ts`, removed stale `app.json`, preserved EAS Updates runtime settings, and changed the splash background to dark to match the app launch experience.
 - Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
 - Removed hardcoded fallback subscription prices and savings claims from the paywall. Store-facing prices now come from RevenueCat offerings only.
+- Removed the client-side partial account-deletion fallback. Account deletion now requires a valid Supabase session token and the backend deletion function, so the app does not delete only profile data while leaving the auth account behind.
 
 ## Needs External Configuration
 
@@ -89,7 +90,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 
 ## Known Risks
 
-- Account deletion now has a full backend path, but it still needs real-device verification after `SUPABASE_SERVICE_ROLE_KEY` is configured in Netlify.
+- Account deletion now has a full backend-only path, but it still needs real-device verification after `SUPABASE_SERVICE_ROLE_KEY` is configured in Netlify.
 - Netlify preview now requires real Supabase auth config. Without a rotated anon key in Netlify, deployed web preview auth will surface configuration errors instead of falling into demo mode.
 - The linked Netlify project is `gashacks-mobile-preview`. Production/deploy-preview currently show `OPENAI_API_KEY`, but not `NREL_API_KEY` or `SUPABASE_SERVICE_ROLE_KEY`.
 - Production EAS receipt and station URLs currently point at the preview Netlify domain. Replace with a production/custom domain before public launch.

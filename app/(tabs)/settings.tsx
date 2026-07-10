@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { deleteAccountWithToken } from "@/lib/accountDeletion";
 import { restorePurchases } from "@/lib/revenuecat";
-import { supabase } from "@/lib/supabase";
 import * as Haptics from "expo-haptics";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
@@ -62,17 +61,15 @@ export default function SettingsScreen() {
           onPress: async () => {
             setDeleting(true);
             try {
-              if (session?.access_token) {
-                const result = await deleteAccountWithToken(session.access_token);
-                if (!result.success) {
-                  throw new Error(result.error ?? "Failed to delete account.");
-                }
-              } else if (user) {
-                await supabase.from("fill_logs").delete().eq("user_id", user.id);
-                await supabase.from("vehicles").delete().eq("user_id", user.id);
-                await supabase.from("favorite_stations").delete().eq("user_id", user.id);
-                await supabase.from("profiles").delete().eq("id", user.id);
+              if (!session?.access_token) {
+                throw new Error("Please sign in again before deleting your account.");
               }
+
+              const result = await deleteAccountWithToken(session.access_token);
+              if (!result.success) {
+                throw new Error(result.error ?? "Failed to delete account.");
+              }
+
               await signOut();
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             } catch (err) {
