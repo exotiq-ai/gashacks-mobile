@@ -29,6 +29,16 @@ describe("runtime config", () => {
     expect(getConfigIssues()).toContain("EXPO_PUBLIC_SKIP_AUTH cannot be enabled in production");
   });
 
+  it("prevents Pro tester mode in production", () => {
+    vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
+    vi.stubEnv("EXPO_PUBLIC_UNLOCK_PRO_FOR_TESTING", "true");
+
+    expect(getRuntimeConfig().unlockProForTesting).toBe(false);
+    expect(getConfigIssues()).toContain(
+      "EXPO_PUBLIC_UNLOCK_PRO_FOR_TESTING cannot be enabled in production",
+    );
+  });
+
   it("requires native release service configuration for production", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");

@@ -53,6 +53,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added Expo Doctor and explicit web export verification to the Netlify deploy workflow before production deploy.
 - Updated the internal test release runbook to remove a stale runtime-health-check instruction and include the current typecheck, unit, Expo Doctor, web export, E2E, subscription, and account-deletion QA gates.
 - Made the Garage free-limit upgrade CTA open the paywall and tightened vehicle tank/year validation before save.
+- Split skip-auth demo login from Pro entitlement testing, and blocked both test bypasses from production config.
+- Added E2E coverage for the Garage free-limit upgrade prompt routing to the paywall.
 
 ## Needs External Configuration
 

@@ -10,6 +10,7 @@ export type RuntimeConfig = {
   revenueCatAndroidKey: string;
   revenueCatEntitlementId: string;
   skipAuth: boolean;
+  unlockProForTesting: boolean;
 };
 
 type ConfigHealth = {
@@ -31,6 +32,7 @@ type ConfigHealth = {
   revenueCatAndroidKeyPresent: boolean;
   revenueCatEntitlementIdPresent: boolean;
   skipAuthDisabledForProduction: boolean;
+  proTestingDisabledForProduction: boolean;
   ok: boolean;
 };
 
@@ -60,6 +62,7 @@ function readEnv() {
   const appEnv = process.env.EXPO_PUBLIC_APP_ENV || "development";
   const production = isProduction(appEnv);
   const skipAuthRequested = truthyEnv(process.env.EXPO_PUBLIC_SKIP_AUTH);
+  const unlockProForTestingRequested = truthyEnv(process.env.EXPO_PUBLIC_UNLOCK_PRO_FOR_TESTING);
 
   return {
     appEnv,
@@ -79,7 +82,9 @@ function readEnv() {
     revenueCatEntitlementId:
       process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID?.trim() || DEFAULT_REVENUECAT_ENTITLEMENT_ID,
     skipAuthRequested,
+    unlockProForTestingRequested,
     skipAuth: production ? false : skipAuthRequested,
+    unlockProForTesting: production ? false : unlockProForTestingRequested,
   };
 }
 
@@ -110,6 +115,7 @@ export function getConfigHealth(): ConfigHealth {
     revenueCatAndroidKeyPresent: Boolean(env.revenueCatAndroidKey),
     revenueCatEntitlementIdPresent: Boolean(env.revenueCatEntitlementId),
     skipAuthDisabledForProduction: !env.production || !env.skipAuthRequested,
+    proTestingDisabledForProduction: !env.production || !env.unlockProForTestingRequested,
     ok: false,
   };
 
@@ -121,7 +127,8 @@ export function getConfigHealth(): ConfigHealth {
     health.supabaseAnonKeyLooksValid &&
     health.googleClientIdPresent &&
     health.googleClientIdLooksValid &&
-    health.skipAuthDisabledForProduction;
+    health.skipAuthDisabledForProduction &&
+    health.proTestingDisabledForProduction;
 
   health.ok = env.production
     ? commonOk &&
@@ -153,6 +160,7 @@ export function getRuntimeConfig(): RuntimeConfig {
     revenueCatAndroidKey: env.revenueCatAndroidKey,
     revenueCatEntitlementId: env.revenueCatEntitlementId,
     skipAuth: env.skipAuth,
+    unlockProForTesting: env.unlockProForTesting,
   };
 }
 
@@ -202,6 +210,9 @@ export function getConfigIssues(): string[] {
   }
   if (!health.skipAuthDisabledForProduction) {
     issues.push("EXPO_PUBLIC_SKIP_AUTH cannot be enabled in production");
+  }
+  if (!health.proTestingDisabledForProduction) {
+    issues.push("EXPO_PUBLIC_UNLOCK_PRO_FOR_TESTING cannot be enabled in production");
   }
 
   return issues;

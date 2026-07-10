@@ -32,6 +32,30 @@ test("renders paywall restore path without configured products", async ({ page }
   await expect(page.getByText(/\$2\.99|\$19\.99|\$1\.67\/mo|SAVE 44/)).toHaveCount(0);
 });
 
+test("routes Garage free-limit upgrade prompt to the paywall", async ({ page }) => {
+  await completeFirstLaunch(page);
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      "gas_hacks_demo_vehicles",
+      JSON.stringify([
+        {
+          id: "demo-vehicle-e2e",
+          year: 2024,
+          make: "BMW",
+          model: "M3",
+          tankCapacityGallons: 15.6,
+          isActive: true,
+        },
+      ]),
+    );
+  });
+  await page.goto("/garage", { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByText("1 vehicle · 1/1 free slot")).toBeVisible();
+  await page.getByText("Upgrade to Pro for more slots").click();
+  await expect(page.getByText("Go Pro")).toBeVisible();
+});
+
 test("station finder accepts manual searches and shows a result state", async ({ page }) => {
   await completeFirstLaunch(page);
   await page.goto("/stations", { waitUntil: "domcontentloaded" });
