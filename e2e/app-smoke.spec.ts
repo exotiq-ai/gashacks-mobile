@@ -75,5 +75,11 @@ test("settings exposes legal, subscription, and account deletion affordances", a
   await expect(page.getByText("Subscription", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Privacy Policy")).toBeVisible();
   await expect(page.getByText("Terms of Service")).toBeVisible();
-  await expect(page.getByText(/Delete Account/)).toBeVisible();
+  await page.getByRole("button", { name: "Delete Account" }).click();
+  await expect(page.getByText("Type DELETE to confirm.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Delete Everything" })).toBeDisabled();
+  await page.getByPlaceholder("DELETE").fill("DELETE");
+  await expect(page.getByRole("button", { name: "Delete Everything" })).toBeEnabled();
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByText("Type DELETE to confirm.")).toHaveCount(0);
 });

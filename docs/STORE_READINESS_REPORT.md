@@ -56,6 +56,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Split skip-auth demo login from Pro entitlement testing, and blocked both test bypasses from production config.
 - Added E2E coverage for the Garage free-limit upgrade prompt routing to the paywall.
 - Enabled EAS preview build auto-increment so repeated TestFlight / Play internal-track builds do not collide on native build numbers.
+- Added typed `DELETE` account-deletion confirmation and E2E coverage for the non-destructive confirmation gate.
 
 ## Needs External Configuration
 

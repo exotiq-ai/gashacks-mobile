@@ -109,4 +109,5 @@ npm run submit:preview:android
   - Restore purchases works for a known active subscriber
 - Account deletion:
   - Delete Account requires a signed-in session
+  - Delete Account requires typing `DELETE` before the destructive action enables
   - Netlify deletion function removes app data and the Supabase auth user

@@ -13,8 +13,10 @@ import { useState } from "react";
 import {
   Alert,
   Linking,
+  Modal,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -29,6 +31,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const [deleting, setDeleting] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const handleRestore = async () => {
     setRestoring(true);
@@ -49,41 +53,43 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This will permanently delete your account, vehicles, and all fill logs. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete Everything",
-          style: "destructive",
-          onPress: async () => {
-            setDeleting(true);
-            try {
-              if (!session?.access_token) {
-                throw new Error("Please sign in again before deleting your account.");
-              }
+  const openDeleteConfirm = () => {
+    setDeleteConfirmText("");
+    setShowDeleteConfirm(true);
+  };
 
-              const result = await deleteAccountWithToken(session.access_token);
-              if (!result.success) {
-                throw new Error(result.error ?? "Failed to delete account.");
-              }
+  const closeDeleteConfirm = () => {
+    if (deleting) return;
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText("");
+  };
 
-              await signOut();
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } catch (err) {
-              Alert.alert(
-                "Error",
-                err instanceof Error ? err.message : "Failed to delete account. Please try again.",
-              );
-            } finally {
-              setDeleting(false);
-            }
-          },
-        },
-      ],
-    );
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText.trim() !== "DELETE") return;
+
+    setDeleting(true);
+    try {
+      if (!session?.access_token) {
+        throw new Error("Please sign in again before deleting your account.");
+      }
+
+      const result = await deleteAccountWithToken(session.access_token);
+      if (!result.success) {
+        throw new Error(result.error ?? "Failed to delete account.");
+      }
+
+      setShowDeleteConfirm(false);
+      setDeleteConfirmText("");
+      await signOut();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (err) {
+      Alert.alert(
+        "Error",
+        err instanceof Error ? err.message : "Failed to delete account. Please try again.",
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -233,11 +239,62 @@ export default function SettingsScreen() {
           label={deleting ? "Deleting..." : "Delete Account"}
           icon="trash-can-outline"
           variant="ghost"
-          onPress={handleDeleteAccount}
+          onPress={openDeleteConfirm}
           loading={deleting}
           style={styles.deleteBtn}
         />
       </GHCard>
+
+      <Modal
+        visible={showDeleteConfirm}
+        animationType="fade"
+        transparent
+        onRequestClose={closeDeleteConfirm}
+      >
+        <View style={styles.modalBackdrop}>
+          <GHCard style={styles.deleteModal}>
+            <GHText variant="subtitle" style={styles.dangerTitle}>
+              Delete Account
+            </GHText>
+            <GHText tone="secondary">
+              This permanently deletes your profile, vehicles, and fill logs.
+              Your subscription must still be managed in the App Store or Play
+              Store.
+            </GHText>
+            <GHText tone="muted" variant="caption">
+              Type DELETE to confirm.
+            </GHText>
+            <TextInput
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              placeholder="DELETE"
+              placeholderTextColor={colors.text.muted}
+              style={styles.confirmInput}
+            />
+            <View style={styles.modalActions}>
+              <GHButton
+                label="Cancel"
+                icon="close"
+                variant="ghost"
+                onPress={closeDeleteConfirm}
+                disabled={deleting}
+                style={styles.modalButton}
+              />
+              <GHButton
+                label={deleting ? "Deleting..." : "Delete Everything"}
+                icon="trash-can-outline"
+                variant="secondary"
+                onPress={() => void handleDeleteAccount()}
+                disabled={deleteConfirmText.trim() !== "DELETE"}
+                loading={deleting}
+                style={[styles.modalButton, styles.deleteBtn]}
+              />
+            </View>
+          </GHCard>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -288,5 +345,33 @@ const styles = StyleSheet.create({
   deleteBtn: {
     borderWidth: 1,
     borderColor: "rgba(239, 68, 68, 0.3)",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.76)",
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  deleteModal: {
+    gap: spacing.md,
+  },
+  confirmInput: {
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.45)",
+    backgroundColor: colors.background.tertiary,
+    color: colors.text.primary,
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    fontFamily: typography.fontFamily.semibold,
+    fontSize: 16,
+    letterSpacing: 1,
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  modalButton: {
+    flex: 1,
   },
 });

@@ -1,7 +1,7 @@
 import { colors, spacing, typography } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { GHText } from "./GHText";
 
 type Variant = "primary" | "secondary" | "ghost";
@@ -14,7 +14,7 @@ type Props = {
   variant?: Variant;
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function GHButton({
@@ -29,6 +29,8 @@ export function GHButton({
   const isDisabled = disabled || loading;
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
       style={({ pressed }) => [
         styles.base,
         variantStyles[variant],
