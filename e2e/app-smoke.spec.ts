@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 });
 
 async function completeFirstLaunch(page: Page) {
@@ -22,7 +22,7 @@ test("completes onboarding and reaches the main tabs", async ({ page }) => {
 
 test("renders paywall restore path without configured products", async ({ page }) => {
   await completeFirstLaunch(page);
-  await page.goto("/paywall");
+  await page.goto("/paywall", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByText("Go Pro")).toBeVisible();
   await expect(page.getByText(/Restore Purchases/)).toBeVisible();
@@ -34,7 +34,7 @@ test("renders paywall restore path without configured products", async ({ page }
 
 test("station finder accepts manual searches and shows a result state", async ({ page }) => {
   await completeFirstLaunch(page);
-  await page.goto("/stations");
+  await page.goto("/stations", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByText("Station Finder")).toBeVisible();
   await page.getByPlaceholder("City, state, or ZIP").fill("80202");
@@ -45,7 +45,7 @@ test("station finder accepts manual searches and shows a result state", async ({
 
 test("settings exposes legal, subscription, and account deletion affordances", async ({ page }) => {
   await completeFirstLaunch(page);
-  await page.goto("/settings");
+  await page.goto("/settings", { waitUntil: "domcontentloaded" });
 
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   await expect(page.getByText("Subscription", { exact: true }).first()).toBeVisible();

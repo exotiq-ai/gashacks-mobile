@@ -50,6 +50,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Stopped treating web as Android for RevenueCat config checks, so web preview no longer reports missing native subscription keys.
 - Added Privacy Policy and Terms of Service links directly on the paywall subscription surface.
 - Updated legal/privacy copy to cover receipt scanning, requested location station lookup, RevenueCat, OpenAI, NREL, auto-renewal, cancellation, and store-managed refund handling.
+- Added Expo Doctor and explicit web export verification to the Netlify deploy workflow before production deploy.
+- Updated the internal test release runbook to remove a stale runtime-health-check instruction and include the current typecheck, unit, Expo Doctor, web export, E2E, subscription, and account-deletion QA gates.
 
 ## Needs External Configuration
 

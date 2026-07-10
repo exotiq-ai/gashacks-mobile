@@ -41,14 +41,17 @@ Run:
 ```bash
 npm run type-check
 npm run test
+npx expo-doctor
+npx expo export -p web
+npm run test:e2e
 ```
 
-Then open auth screen and run:
-- `Run Runtime Health Check`
-
 Expected:
-- Supabase session bootstrap success
-- Google OAuth URL generation success
+- TypeScript passes.
+- Unit and Netlify function tests pass.
+- Expo SDK health passes.
+- Web export completes.
+- Playwright mobile-web smoke checks pass.
 
 ## 4) Build internal binaries
 
@@ -95,3 +98,10 @@ npm run submit:preview:android
 - Pro gating:
   - Free user sees limit prompts
   - Pro user bypasses limits
+- Subscriptions:
+  - Paywall loads store prices from RevenueCat only
+  - Purchase cancellation does not unlock Pro
+  - Restore purchases works for a known active subscriber
+- Account deletion:
+  - Delete Account requires a signed-in session
+  - Netlify deletion function removes app data and the Supabase auth user

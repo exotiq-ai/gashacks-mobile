@@ -28,6 +28,12 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Expo Doctor
+        run: npx expo-doctor
+
+      - name: Verify web export
+        run: npx expo export -p web
+
       - name: Deploy to Netlify
         run: npx netlify-cli deploy --build --prod --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"
         env:
