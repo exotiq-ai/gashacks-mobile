@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getRuntimeConfig } from "@/lib/runtimeConfig";
+import { resetRevenueCatUser } from "@/lib/revenuecat";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -82,6 +83,7 @@ export function useAuth(): UseAuthResult {
 
   const signOut = useCallback(async () => {
     if (skipAuth) return;
+    await resetRevenueCatUser();
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw error;

@@ -207,9 +207,16 @@ export default function SettingsScreen() {
         label="Sign Out"
         icon="logout"
         variant="secondary"
-        onPress={() => {
-          signOut();
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        onPress={async () => {
+          try {
+            await signOut();
+            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          } catch (err) {
+            Alert.alert(
+              "Sign Out Failed",
+              err instanceof Error ? err.message : "Please try again.",
+            );
+          }
         }}
       />
 

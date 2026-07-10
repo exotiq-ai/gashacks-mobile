@@ -53,6 +53,19 @@ export async function syncRevenueCatUser(appUserId: string | null | undefined): 
   }
 }
 
+export async function resetRevenueCatUser(): Promise<void> {
+  configureRevenueCat();
+  if (_lastConfigError || !_lastSyncedAppUserId) return;
+
+  try {
+    await Purchases.logOut();
+  } catch {
+    // Supabase sign-out should still proceed if RevenueCat is unavailable.
+  } finally {
+    _lastSyncedAppUserId = null;
+  }
+}
+
 export async function getOfferings(): Promise<PurchasesOffering | null> {
   configureRevenueCat();
   if (_lastConfigError) return null;
