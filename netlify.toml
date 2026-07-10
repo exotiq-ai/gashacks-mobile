@@ -6,7 +6,7 @@
 [build.environment]
   NODE_VERSION = "22"
   EXPO_PUBLIC_APP_ENV = "preview"
-  EXPO_PUBLIC_SKIP_AUTH = "true"
+  EXPO_PUBLIC_SKIP_AUTH = "false"
   EXPO_PUBLIC_SUPABASE_URL = "https://feicgarueqllkpzgewul.supabase.co"
   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = "121670421485-ub44q7rq6puj20ecfgboi4sevg869a1r.apps.googleusercontent.com"
   EXPO_PUBLIC_RECEIPT_SCAN_API_URL = "/.netlify/functions/receipt-scan"

@@ -51,8 +51,9 @@ function truthyEnv(value: string | undefined) {
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
-function looksLikeHttpsUrl(value: string) {
-  return value.startsWith("https://");
+function looksLikeApiUrl(value: string, production: boolean) {
+  if (value.startsWith("https://")) return true;
+  return !production && value.startsWith("/.netlify/functions/");
 }
 
 function readEnv() {
@@ -97,11 +98,14 @@ export function getConfigHealth(): ConfigHealth {
     googleClientIdPresent: Boolean(env.googleWebClientId),
     googleClientIdLooksValid: env.googleWebClientId.endsWith(".apps.googleusercontent.com"),
     receiptScanApiUrlPresent: Boolean(env.receiptScanApiUrl),
-    receiptScanApiUrlLooksValid: !env.receiptScanApiUrl || looksLikeHttpsUrl(env.receiptScanApiUrl),
+    receiptScanApiUrlLooksValid:
+      !env.receiptScanApiUrl || looksLikeApiUrl(env.receiptScanApiUrl, env.production),
     stationsApiUrlPresent: Boolean(env.stationsApiUrl),
-    stationsApiUrlLooksValid: !env.stationsApiUrl || looksLikeHttpsUrl(env.stationsApiUrl),
+    stationsApiUrlLooksValid:
+      !env.stationsApiUrl || looksLikeApiUrl(env.stationsApiUrl, env.production),
     accountDeleteApiUrlPresent: Boolean(env.accountDeleteApiUrl),
-    accountDeleteApiUrlLooksValid: !env.accountDeleteApiUrl || looksLikeHttpsUrl(env.accountDeleteApiUrl),
+    accountDeleteApiUrlLooksValid:
+      !env.accountDeleteApiUrl || looksLikeApiUrl(env.accountDeleteApiUrl, env.production),
     revenueCatIosKeyPresent: Boolean(env.revenueCatIosKey),
     revenueCatAndroidKeyPresent: Boolean(env.revenueCatAndroidKey),
     revenueCatEntitlementIdPresent: Boolean(env.revenueCatEntitlementId),

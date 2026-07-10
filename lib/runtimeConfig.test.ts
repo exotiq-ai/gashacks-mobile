@@ -53,4 +53,38 @@ describe("runtime config", () => {
       ]),
     );
   });
+
+  it("allows Netlify function paths for non-production web previews", () => {
+    vi.stubEnv("EXPO_PUBLIC_APP_ENV", "preview");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "/.netlify/functions/receipt-scan");
+    vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "/.netlify/functions/stations");
+    vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "/.netlify/functions/delete-account");
+
+    const issues = getConfigIssues();
+
+    expect(issues).not.toContain("EXPO_PUBLIC_RECEIPT_SCAN_API_URL must start with https://");
+    expect(issues).not.toContain("EXPO_PUBLIC_STATIONS_API_URL must start with https://");
+    expect(issues).not.toContain("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must start with https://");
+  });
+
+  it("requires absolute API URLs for production releases", () => {
+    vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "/.netlify/functions/receipt-scan");
+    vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "/.netlify/functions/stations");
+    vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "/.netlify/functions/delete-account");
+
+    expect(getConfigIssues()).toEqual(
+      expect.arrayContaining([
+        "EXPO_PUBLIC_RECEIPT_SCAN_API_URL must start with https://",
+        "EXPO_PUBLIC_STATIONS_API_URL must start with https://",
+        "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must start with https://",
+      ]),
+    );
+  });
 });
