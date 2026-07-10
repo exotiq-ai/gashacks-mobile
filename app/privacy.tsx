@@ -21,6 +21,8 @@ export default function PrivacyScreen() {
           {"\n\n"}• Email address (for account creation)
           {"\n"}• Vehicle information you enter (make, model, tank size)
           {"\n"}• Fill log data you save (blend calculations, dates)
+          {"\n"}• Receipt images you choose to scan, sent only for receipt extraction
+          {"\n"}• Approximate location only when you request nearby station search
           {"\n"}• Authentication tokens (stored securely on device)
         </GHText>
 
@@ -32,8 +34,11 @@ export default function PrivacyScreen() {
           {"\n\n"}• Syncing your vehicle garage and fill logs across devices
           {"\n"}• Calculating ethanol blends based on your vehicle specs
           {"\n"}• Displaying your fill history and analytics
+          {"\n"}• Finding nearby E85 stations when you request a location search
+          {"\n"}• Extracting details from receipt images you choose to scan
           {"\n\n"}We do not sell, share, or monetize your personal data. We do not
-          run ads. We do not track your location.
+          run ads. We do not continuously track your location or sell location
+          data.
         </GHText>
 
         <GHText variant="subtitle" style={styles.heading}>
@@ -61,6 +66,9 @@ export default function PrivacyScreen() {
           • Supabase (authentication and database)
           {"\n"}• Apple Sign In (if you choose this login method)
           {"\n"}• Google Sign In (if you choose this login method)
+          {"\n"}• RevenueCat (subscription purchase status)
+          {"\n"}• OpenAI (receipt image extraction when you scan a receipt)
+          {"\n"}• NREL Alternative Fuels Data Center (E85 station lookup)
           {"\n"}• Expo (app updates and crash reporting)
         </GHText>
 

@@ -48,6 +48,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added RevenueCat identity sync to the signed-in Supabase user before entitlement checks and paywall offering fetches, reducing anonymous-purchase and restore edge cases.
 - Added RevenueCat identity reset during sign-out so the next app user does not inherit the previous user's purchaser identity on shared devices.
 - Stopped treating web as Android for RevenueCat config checks, so web preview no longer reports missing native subscription keys.
+- Added Privacy Policy and Terms of Service links directly on the paywall subscription surface.
+- Updated legal/privacy copy to cover receipt scanning, requested location station lookup, RevenueCat, OpenAI, NREL, auto-renewal, cancellation, and store-managed refund handling.
 
 ## Needs External Configuration
 

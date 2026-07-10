@@ -26,6 +26,8 @@ test("renders paywall restore path without configured products", async ({ page }
 
   await expect(page.getByText("Go Pro")).toBeVisible();
   await expect(page.getByText(/Restore Purchases/)).toBeVisible();
+  await expect(page.getByText("Privacy Policy")).toBeVisible();
+  await expect(page.getByText("Terms of Service")).toBeVisible();
   await expect(page.getByText("Pro Enabled for Testing")).toHaveCount(0);
   await expect(page.getByText(/\$2\.99|\$19\.99|\$1\.67\/mo|SAVE 44/)).toHaveCount(0);
 });

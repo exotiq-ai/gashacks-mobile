@@ -52,9 +52,11 @@ export default function TermsScreen() {
         </GHText>
         <GHText tone="secondary" style={styles.body}>
           Gas Hacks offers a free tier and a Pro subscription. Pro subscriptions
-          are billed through Apple App Store or Google Play Store. You can cancel
-          at any time through your device's subscription settings. No refunds
-          are provided for partial billing periods.
+          are billed through Apple App Store or Google Play Store, renew
+          automatically, and are charged to your store account. You can cancel
+          at any time through your device's subscription settings at least 24
+          hours before the current billing period ends. Refund requests are
+          handled by Apple or Google according to their store policies.
         </GHText>
 
         <GHText variant="subtitle" style={styles.heading}>

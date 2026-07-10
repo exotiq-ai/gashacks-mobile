@@ -8,6 +8,7 @@ import { getOfferings, purchasePackage, restorePurchases, syncRevenueCatUser } f
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
+import type { Href } from "expo-router";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -218,6 +219,23 @@ export default function PaywallScreen() {
           onPress={() => router.back()}
         />
 
+        <View style={styles.legalLinks}>
+          <GHButton
+            label="Privacy Policy"
+            icon="shield-account"
+            variant="ghost"
+            onPress={() => router.push("/privacy" as Href)}
+            style={styles.legalLinkButton}
+          />
+          <GHButton
+            label="Terms of Service"
+            icon="file-document-outline"
+            variant="ghost"
+            onPress={() => router.push("/terms" as Href)}
+            style={styles.legalLinkButton}
+          />
+        </View>
+
         <GHText tone="muted" variant="caption" style={styles.legal}>
           Payment will be charged to your App Store or Play Store account.
           Subscription renews automatically unless cancelled at least 24 hours
@@ -321,6 +339,12 @@ const styles = StyleSheet.create({
   legal: {
     textAlign: "center",
     lineHeight: 18,
+  },
+  legalLinks: {
+    gap: spacing.xs,
+  },
+  legalLinkButton: {
+    minHeight: 44,
   },
   unavailableCard: {
     gap: spacing.xs,
