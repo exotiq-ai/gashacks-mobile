@@ -14,6 +14,8 @@ import { MAKES, getModelsForMake, type VehicleTemplate } from "@/lib/vehicleDb";
 import { useGarageStore } from "@/lib/store";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import type { Href } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -32,6 +34,7 @@ export default function GarageScreen() {
   const { user } = useAuth();
   const { isPro, entitlements } = useEntitlements();
   const { vehicles, setVehicles, setActiveVehicle, activeVehicleId } = useGarageStore();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -79,7 +82,9 @@ export default function GarageScreen() {
       await setActiveVehicleRemote(user.id, vehicleId);
       setActiveVehicle(vehicleId);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch {}
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to set active vehicle.");
+    }
   };
 
   const handleAdd = async () => {
@@ -98,8 +103,13 @@ export default function GarageScreen() {
         addTank = selectedTemplate.tankGallons;
       }
 
-      if (!addMake || !addModel || addTank <= 0) {
+      if (!addMake || !addModel || !Number.isFinite(addTank) || addTank <= 0) {
         setError("Make, model, and tank size are required.");
+        setSaving(false);
+        return;
+      }
+      if (addYear !== undefined && (!Number.isInteger(addYear) || addYear < 1900 || addYear > 2100)) {
+        setError("Enter a valid vehicle year.");
         setSaving(false);
         return;
       }
@@ -203,8 +213,13 @@ export default function GarageScreen() {
           label={canAdd ? "Add Vehicle" : "Upgrade to Pro for more slots"}
           icon={canAdd ? "plus" : "lock-open-variant"}
           variant={canAdd ? "primary" : "secondary"}
-          disabled={!canAdd}
-          onPress={() => setShowAdd(true)}
+          onPress={() => {
+            if (canAdd) {
+              setShowAdd(true);
+              return;
+            }
+            router.push("/paywall" as Href);
+          }}
         />
       ) : (
         <GHCard style={styles.addCard}>

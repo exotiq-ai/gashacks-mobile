@@ -90,6 +90,7 @@ npm run submit:preview:android
 - Garage:
   - Add vehicle
   - Set active vehicle
+  - Free account upgrade prompt opens the paywall after one vehicle
 - Mission Control:
   - Input validation
   - Save blend configuration
