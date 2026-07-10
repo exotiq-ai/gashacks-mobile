@@ -35,6 +35,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Removed hardcoded subscription price copy from Settings.
 - Added safe public EAS variables for development, preview, and production environments where values were known.
 - Added a server-backed account deletion function that verifies the user's Supabase session and deletes the auth user with a service-role key.
+- Removed the unused native Google Sign-In SDK. Google auth uses Supabase OAuth through WebBrowser, and removing the native package eliminates an iOS CocoaPods static-library integration failure.
+- Added `expo-system-ui` so Android honors the configured dark user interface style during native prebuilds.
 
 ## Needs External Configuration
 
@@ -81,6 +83,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 
 - Account deletion now has a full backend path, but it still needs real-device verification after `SUPABASE_SERVICE_ROLE_KEY` is configured in Netlify.
 - Production EAS receipt and station URLs currently point at the preview Netlify domain. Replace with a production/custom domain before public launch.
-- Local iOS EAS pre-build inspection is blocked on this machine because `fastlane` is not installed in PATH.
-- Local npm audit still reports 11 moderate `uuid` findings through Expo tooling. `npm audit fix --force` would downgrade Expo to 46, so this needs Expo/upstream review instead of the forced fix.
+- Local iOS tooling now has Homebrew `fastlane` and CocoaPods installed, and iOS pods install after removing the unused native Google Sign-In SDK.
+- Local iOS EAS pre-build is still blocked by toolchain compatibility: the usable Intel Xcode here is 16.4, while Expo SDK 55 reports it requires Xcode 26+. The downloaded `Xcode.app` appears incompatible with this CPU, while `Xcode 2.app` runs but is too old for SDK 55.
+- Local npm audit still reports 10 moderate `uuid` findings through Expo tooling. `npm audit fix --force` would downgrade Expo to 46, so this needs Expo/upstream review instead of the forced fix.
 - The Playwright E2E suite covers web smoke flows only. Native behavior still needs simulator/device validation.
