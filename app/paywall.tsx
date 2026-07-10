@@ -87,18 +87,19 @@ export default function PaywallScreen() {
     }
   };
 
-  const monthlyPrice = offering?.monthly?.product.priceString ?? "$2.99";
-  const annualPrice = offering?.annual?.product.priceString ?? "$19.99";
+  const monthlyPrice = offering?.monthly?.product.priceString ?? null;
+  const annualPrice = offering?.annual?.product.priceString ?? null;
   const selectedPackage = getPackage();
   const subscriptionsUnavailable = offeringLoaded && !selectedPackage;
+  const selectedPrice = plan === "monthly" ? monthlyPrice : annualPrice;
   const ctaLabel = isPro
     ? "You're Pro"
     : purchasing
       ? "Processing..."
       : subscriptionsUnavailable
         ? "Subscriptions Unavailable"
-        : offeringLoaded
-          ? `Subscribe - ${plan === "monthly" ? `${monthlyPrice}/mo` : `${annualPrice}/yr`}`
+        : selectedPrice
+          ? `Subscribe - ${selectedPrice}`
           : "Loading Subscriptions...";
 
   return (
@@ -151,10 +152,10 @@ export default function PaywallScreen() {
             }}
           >
             <GHText tone={plan === "monthly" ? "accent" : "secondary"} style={styles.planPrice}>
-              {monthlyPrice}
+              {monthlyPrice ?? "Monthly"}
             </GHText>
             <GHText tone="muted" variant="caption">
-              per month
+              {monthlyPrice ? "per month" : "Store price loads at checkout"}
             </GHText>
           </Pressable>
 
@@ -165,14 +166,16 @@ export default function PaywallScreen() {
               void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }}
           >
-            <View style={styles.saveBadge}>
-              <GHText style={styles.saveBadgeText}>SAVE 44%</GHText>
-            </View>
+            {monthlyPrice && annualPrice && (
+              <View style={styles.saveBadge}>
+                <GHText style={styles.saveBadgeText}>BEST VALUE</GHText>
+              </View>
+            )}
             <GHText tone={plan === "annual" ? "accent" : "secondary"} style={styles.planPrice}>
-              {annualPrice}
+              {annualPrice ?? "Annual"}
             </GHText>
             <GHText tone="muted" variant="caption">
-              per year ($1.67/mo)
+              {annualPrice ? "per year" : "Store price loads at checkout"}
             </GHText>
           </Pressable>
         </View>

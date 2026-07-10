@@ -43,6 +43,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Allowed relative Netlify function URLs for non-production web previews while keeping absolute `https://` API URL requirements for production releases.
 - Consolidated Expo native metadata into `app.config.ts`, removed stale `app.json`, preserved EAS Updates runtime settings, and changed the splash background to dark to match the app launch experience.
 - Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
+- Removed hardcoded fallback subscription prices and savings claims from the paywall. Store-facing prices now come from RevenueCat offerings only.
 
 ## Needs External Configuration
 
