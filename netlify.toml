@@ -7,8 +7,12 @@
   NODE_VERSION = "22"
   EXPO_PUBLIC_APP_ENV = "preview"
   EXPO_PUBLIC_SKIP_AUTH = "true"
+  EXPO_PUBLIC_SUPABASE_URL = "https://feicgarueqllkpzgewul.supabase.co"
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = "121670421485-ub44q7rq6puj20ecfgboi4sevg869a1r.apps.googleusercontent.com"
   EXPO_PUBLIC_RECEIPT_SCAN_API_URL = "/.netlify/functions/receipt-scan"
+  EXPO_PUBLIC_STATIONS_API_URL = "/.netlify/functions/stations"
   EXPO_PUBLIC_ACCOUNT_DELETE_API_URL = "/.netlify/functions/delete-account"
+  EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID = "Gas Hacks Pro"
 
 [[redirects]]
   from = "/*"

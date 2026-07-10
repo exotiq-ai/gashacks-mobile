@@ -37,6 +37,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added a server-backed account deletion function that verifies the user's Supabase session and deletes the auth user with a service-role key.
 - Removed the unused native Google Sign-In SDK. Google auth uses Supabase OAuth through WebBrowser, and removing the native package eliminates an iOS CocoaPods static-library integration failure.
 - Added `expo-system-ui` so Android honors the configured dark user interface style during native prebuilds.
+- Added Netlify function tests for missing server secrets, invalid receipt images, station query validation, NREL proxy parameter bounds, and account deletion auth guards.
+- Added safe public Netlify preview build variables for Supabase URL, Google web OAuth client ID, station/receipt/account-deletion function URLs, and the RevenueCat entitlement ID.
 
 ## Needs External Configuration
 
@@ -45,10 +47,10 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
   - `EXPO_PUBLIC_SUPABASE_ANON_KEY` in production
   - `EXPO_PUBLIC_REVENUECAT_IOS_KEY` in preview and production
   - `EXPO_PUBLIC_REVENUECAT_ANDROID_KEY` in preview and production
-- Configure Netlify server-side variables:
-  - `OPENAI_API_KEY`
+- Configure remaining Netlify server-side variables:
   - `NREL_API_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
+- Rotate and re-check `OPENAI_API_KEY` in Netlify. It is present on the linked Netlify project, but keys pasted into chat should be treated as burned.
 - Confirm Supabase auth providers and redirect URLs for web, iOS, and Android.
 - Confirm Apple Sign In capability for `com.exotiq.gashacks` and service configuration `G39773LD27.com.exotiq.gashacks`.
 - Configure RevenueCat products, offerings, entitlements, sandbox testers, and App Store / Play Store integrations.
@@ -82,6 +84,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Known Risks
 
 - Account deletion now has a full backend path, but it still needs real-device verification after `SUPABASE_SERVICE_ROLE_KEY` is configured in Netlify.
+- The linked Netlify project is `gashacks-mobile-preview`. Production/deploy-preview currently show `OPENAI_API_KEY`, but not `NREL_API_KEY` or `SUPABASE_SERVICE_ROLE_KEY`.
 - Production EAS receipt and station URLs currently point at the preview Netlify domain. Replace with a production/custom domain before public launch.
 - Local iOS tooling now has Homebrew `fastlane` and CocoaPods installed, and iOS pods install after removing the unused native Google Sign-In SDK.
 - Local iOS EAS pre-build is still blocked by toolchain compatibility: the usable Intel Xcode here is 16.4, while Expo SDK 55 reports it requires Xcode 26+. The downloaded `Xcode.app` appears incompatible with this CPU, while `Xcode 2.app` runs but is too old for SDK 55.
