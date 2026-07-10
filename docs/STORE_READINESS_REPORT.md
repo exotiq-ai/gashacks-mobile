@@ -45,6 +45,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
 - Removed hardcoded fallback subscription prices and savings claims from the paywall. Store-facing prices now come from RevenueCat offerings only.
 - Removed the client-side partial account-deletion fallback. Account deletion now requires a valid Supabase session token and the backend deletion function, so the app does not delete only profile data while leaving the auth account behind.
+- Added RevenueCat identity sync to the signed-in Supabase user before entitlement checks and paywall offering fetches, reducing anonymous-purchase and restore edge cases.
+- Stopped treating web as Android for RevenueCat config checks, so web preview no longer reports missing native subscription keys.
 
 ## Needs External Configuration
 

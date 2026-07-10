@@ -27,6 +27,15 @@ export function resolveRevenueCatConfig(
     };
   }
 
+  if (platform !== "ios" && platform !== "android") {
+    return {
+      apiKey: "",
+      entitlementId,
+      configured: false,
+      error: `RevenueCat is not supported on ${platform}`,
+    };
+  }
+
   const keyName =
     platform === "ios" ? "EXPO_PUBLIC_REVENUECAT_IOS_KEY" : "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY";
   const apiKey =

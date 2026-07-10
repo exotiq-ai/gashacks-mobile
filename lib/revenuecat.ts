@@ -11,6 +11,7 @@ export type RCOffering = PurchasesOffering;
 
 let _configured = false;
 let _lastConfigError: string | null = null;
+let _lastSyncedAppUserId: string | null = null;
 
 export function configureRevenueCat() {
   if (_configured) return;
@@ -37,6 +38,18 @@ export async function checkProEntitlement(): Promise<boolean> {
     return customerInfo.entitlements.active[config.entitlementId] !== undefined;
   } catch {
     return false;
+  }
+}
+
+export async function syncRevenueCatUser(appUserId: string | null | undefined): Promise<void> {
+  configureRevenueCat();
+  if (_lastConfigError || !appUserId || _lastSyncedAppUserId === appUserId) return;
+
+  try {
+    await Purchases.logIn(appUserId);
+    _lastSyncedAppUserId = appUserId;
+  } catch {
+    // Entitlement checks handle unavailable RevenueCat state without blocking the app.
   }
 }
 

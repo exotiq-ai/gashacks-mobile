@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { checkProEntitlement } from "@/lib/revenuecat";
+import { checkProEntitlement, syncRevenueCatUser } from "@/lib/revenuecat";
 import { resolveEntitlements, shouldUnlockPremiumForTesting } from "@/lib/entitlements";
 import { getRuntimeConfig } from "@/lib/runtimeConfig";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,6 +28,7 @@ export function useEntitlements() {
     setLoading(true);
     setError(null);
     try {
+      await syncRevenueCatUser(user.id);
       const pro = await checkProEntitlement();
       setIsPro(pro);
     } catch (err) {

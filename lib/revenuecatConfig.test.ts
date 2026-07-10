@@ -24,4 +24,15 @@ describe("resolveRevenueCatConfig", () => {
     expect(config.configured).toBe(false);
     expect(config.error).toBe("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY is missing");
   });
+
+  it("does not request native RevenueCat keys on unsupported platforms", () => {
+    const config = resolveRevenueCatConfig("web", {
+      revenueCatIosKey: "",
+      revenueCatAndroidKey: "",
+      revenueCatEntitlementId: "pro",
+    });
+
+    expect(config.configured).toBe(false);
+    expect(config.error).toBe("RevenueCat is not supported on web");
+  });
 });

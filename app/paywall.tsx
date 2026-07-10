@@ -2,8 +2,9 @@ import { GHButton } from "@/components/ui/GHButton";
 import { GHCard } from "@/components/ui/GHCard";
 import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
+import { useAuth } from "@/hooks/useAuth";
 import { useEntitlements } from "@/hooks/useEntitlements";
-import { getOfferings, purchasePackage, restorePurchases } from "@/lib/revenuecat";
+import { getOfferings, purchasePackage, restorePurchases, syncRevenueCatUser } from "@/lib/revenuecat";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Stack, useRouter } from "expo-router";
@@ -26,6 +27,7 @@ const FEATURES = [
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const { refresh, isPro } = useEntitlements();
   const [plan, setPlan] = useState<Plan>("annual");
   const [purchasing, setPurchasing] = useState(false);
@@ -34,11 +36,12 @@ export default function PaywallScreen() {
   const [offeringLoaded, setOfferingLoaded] = useState(false);
 
   useEffect(() => {
-    getOfferings()
+    syncRevenueCatUser(user?.id)
+      .then(getOfferings)
       .then(setOffering)
       .catch(() => {})
       .finally(() => setOfferingLoaded(true));
-  }, []);
+  }, [user?.id]);
 
   const getPackage = (): PurchasesPackage | null => {
     if (!offering) return null;
