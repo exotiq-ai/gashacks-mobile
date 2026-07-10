@@ -19,6 +19,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "com.exotiq.gashacks",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSCameraUsageDescription:
+        "Gas Hacks uses the camera to scan fuel receipts after you choose to add a fill log.",
+      NSLocationWhenInUseUsageDescription:
+        "Gas Hacks uses your location to find nearby E85 stations when you search near you.",
+      NSPhotoLibraryUsageDescription:
+        "Gas Hacks uses selected photos so you can scan saved fuel receipt images.",
     },
   },
   android: {

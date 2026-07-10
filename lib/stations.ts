@@ -1,6 +1,3 @@
-const NREL_API_KEY = "bv0uQsycOr0ou2ID7tsdz8P4zh0Gz1Nc4v2bRBVp";
-const NREL_BASE_URL = "https://developer.nrel.gov/api/alt-fuel-stations/v1.json";
-
 export type Station = {
   id: number;
   name: string;
@@ -166,7 +163,6 @@ export type StationSearchInput =
 
 export function buildNrelStationParams(input: StationSearchInput): URLSearchParams {
   const params = new URLSearchParams({
-    api_key: NREL_API_KEY,
     fuel_type: "E85",
     radius: String(input.radiusMiles ?? 25),
     limit: String(input.limit ?? 50),
@@ -182,6 +178,10 @@ export function buildNrelStationParams(input: StationSearchInput): URLSearchPara
   }
 
   return params;
+}
+
+function getStationsApiUrl() {
+  return process.env.EXPO_PUBLIC_STATIONS_API_URL?.trim() ?? "";
 }
 
 function distanceMiles(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
@@ -245,6 +245,10 @@ export async function fetchNearbyE85Stations(
   radiusMiles = 25,
   limit = 50,
 ): Promise<Station[]> {
+  const fallbackInput =
+    typeof inputOrLatitude === "number"
+      ? { latitude: inputOrLatitude, longitude: longitude ?? 0, radiusMiles, limit }
+      : inputOrLatitude;
   const params =
     typeof inputOrLatitude === "number"
       ? buildNrelStationParams({
@@ -256,14 +260,25 @@ export async function fetchNearbyE85Stations(
       : buildNrelStationParams(inputOrLatitude);
 
   try {
-    const response = await fetch(`${NREL_BASE_URL}?${params.toString()}`);
-    if (!response.ok) {
-      throw new Error(`NREL API error: ${response.status}`);
+    const stationsApiUrl = getStationsApiUrl();
+    if (!stationsApiUrl) {
+      return fallbackForInput(fallbackInput);
     }
 
-    const data: NRELResponse = await response.json() as NRELResponse;
+    const response = await fetch(`${stationsApiUrl}?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error(`Stations API error: ${response.status}`);
+    }
 
-    return data.fuel_stations.map((s) => ({
+    const data: { stations?: Station[]; fuel_stations?: NRELStation[] } =
+      await response.json() as { stations?: Station[]; fuel_stations?: NRELStation[] };
+
+    if (Array.isArray(data.stations)) {
+      return data.stations;
+    }
+
+    const nrelStations = data.fuel_stations ?? [];
+    return nrelStations.map((s) => ({
       id: s.id,
       name: s.station_name,
       address: s.street_address,
@@ -278,10 +293,6 @@ export async function fetchNearbyE85Stations(
       evLevel1Count: s.ev_level1_evse_num,
     }));
   } catch (err) {
-    const fallbackInput =
-      typeof inputOrLatitude === "number"
-        ? { latitude: inputOrLatitude, longitude: longitude ?? 0, radiusMiles, limit }
-        : inputOrLatitude;
     return fallbackForInput(fallbackInput);
   }
 }

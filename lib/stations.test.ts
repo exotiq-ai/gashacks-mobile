@@ -35,6 +35,7 @@ describe("buildNrelStationParams", () => {
     expect(params.get("longitude")).toBe("-104.9");
     expect(params.get("radius")).toBe("25");
     expect(params.get("limit")).toBe("12");
+    expect(params.has("api_key")).toBe(false);
   });
 
   it("uses a city or zip location for manual station search", () => {
@@ -58,27 +59,27 @@ describe("buildMapsUrl", () => {
 });
 
 describe("fetchNearbyE85Stations", () => {
-  it("returns manual location search results sorted by NREL distance", async () => {
+  it("uses the configured stations API for manual location search", async () => {
+    vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "https://api.gashacks.test/stations");
     const fetchMock = vi.fn(async () => ({
       ok: true,
       json: async () => ({
-        fuel_stations: [
+        stations: [
           {
             id: 42,
-            station_name: "Test E85",
-            street_address: "123 Main St",
+            name: "Test E85",
+            address: "123 Main St",
             city: "Denver",
             state: "CO",
             zip: "80202",
             phone: null,
-            distance: 3.2,
+            distanceMiles: 3.2,
             latitude: 39.7392,
             longitude: -104.9903,
-            e85_blender_pump: true,
-            ev_level1_evse_num: null,
+            e85BlenderPump: true,
+            evLevel1Count: null,
           },
         ],
-        total_results: 1,
       }),
     }));
     vi.stubGlobal("fetch", fetchMock);
@@ -89,7 +90,9 @@ describe("fetchNearbyE85Stations", () => {
     expect(results[0].name).toBe("Test E85");
     const firstCall = fetchMock.mock.calls[0] as unknown as [string];
     expect(String(firstCall[0])).toContain("location=80202");
+    expect(String(firstCall[0])).toContain("https://api.gashacks.test/stations?");
 
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
 

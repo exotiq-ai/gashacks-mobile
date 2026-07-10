@@ -84,8 +84,15 @@ exports.handler = async (event) => {
 
   const imageBase64 = payload.imageBase64;
   const mimeType = payload.mimeType || "image/jpeg";
+  const allowedMimeTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
   if (typeof imageBase64 !== "string" || imageBase64.length < 20) {
     return json(400, { error: "Missing receipt image." });
+  }
+  if (!allowedMimeTypes.has(mimeType)) {
+    return json(400, { error: "Unsupported receipt image type." });
+  }
+  if (imageBase64.length > 8_000_000) {
+    return json(413, { error: "Receipt image is too large." });
   }
 
   const prompt = [

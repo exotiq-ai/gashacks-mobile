@@ -71,64 +71,15 @@ export async function scanReceiptImage({
     process.env.EXPO_PUBLIC_RECEIPT_SCAN_API_URL ||
     (typeof window !== "undefined" ? "/.netlify/functions/receipt-scan" : "");
 
-  if (apiUrl) {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageBase64: base64, mimeType }),
-    });
-    if (!response.ok) throw new Error(`Receipt scan failed: ${response.status}`);
-    return normalizeScanResult(await response.json() as Partial<ReceiptScanResult>);
+  if (!apiUrl) {
+    throw new Error("Receipt AI is not configured. Add EXPO_PUBLIC_RECEIPT_SCAN_API_URL.");
   }
 
-  const openAiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-  if (!openAiKey) {
-    throw new Error("Receipt AI is not configured. Add EXPO_PUBLIC_RECEIPT_SCAN_API_URL or EXPO_PUBLIC_OPENAI_API_KEY.");
-  }
-
-  const prompt = [
-    "Extract every useful detail from this fuel receipt for an ethanol blend log.",
-    "Return only JSON with keys:",
-    "stationName, stationAddress, purchasedAt, gallonsE85, gallonsPump, pricePerGalE85, pricePerGalPump, totalCost, ethanolPercent, confidence, rawText.",
-    "Classify E85/ethanol/flex fuel lines as gallonsE85. Classify premium/unleaded/super gasoline as gallonsPump.",
-    "Use null for fields you cannot read. confidence must be 0 to 1.",
-  ].join(" ");
-
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch(apiUrl, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${openAiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: prompt },
-            {
-              type: "input_image",
-              image_url: `data:${mimeType};base64,${base64}`,
-              detail: "high",
-            },
-          ],
-        },
-      ],
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageBase64: base64, mimeType }),
   });
-
   if (!response.ok) throw new Error(`Receipt scan failed: ${response.status}`);
-
-  const data = await response.json() as {
-    output_text?: string;
-    output?: Array<{ content?: Array<{ text?: string }> }>;
-  };
-  const text =
-    data.output_text ??
-    data.output?.flatMap((item) => item.content ?? []).map((item) => item.text).filter(Boolean).join("\n") ??
-    "";
-
-  if (!text.trim()) return EMPTY_SCAN;
-  return parseJsonFromModel(text);
+  return normalizeScanResult(await response.json() as Partial<ReceiptScanResult>);
 }

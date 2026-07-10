@@ -28,9 +28,10 @@ describe("scanReceiptImage", () => {
 
   it("reports a clear setup error when no scanner is configured", async () => {
     vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "");
-    vi.stubEnv("EXPO_PUBLIC_OPENAI_API_KEY", "");
 
-    await expect(scanReceiptImage({ base64: "abc123" })).rejects.toThrow("Receipt AI is not configured");
+    await expect(scanReceiptImage({ base64: "abc123" })).rejects.toThrow(
+      "Receipt AI is not configured. Add EXPO_PUBLIC_RECEIPT_SCAN_API_URL.",
+    );
 
     vi.unstubAllEnvs();
   });
