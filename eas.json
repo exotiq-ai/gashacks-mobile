@@ -16,6 +16,7 @@
       }
     },
     "preview": {
+      "autoIncrement": true,
       "channel": "preview",
       "ios": {
         "distribution": "store"

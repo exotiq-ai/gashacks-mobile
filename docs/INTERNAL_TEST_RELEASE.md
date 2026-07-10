@@ -57,6 +57,8 @@ Expected:
 
 ## 4) Build internal binaries
 
+Preview builds use EAS remote app versioning with auto-increment enabled, so each TestFlight / Play internal-track build gets a new native build number.
+
 iOS internal preview build:
 
 ```bash
