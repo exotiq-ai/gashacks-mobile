@@ -162,4 +162,32 @@ describe("delete-account function", () => {
     expect(response.statusCode).toBe(401);
     expect(parseBody(response).error).toBe("Missing authorization token.");
   });
+
+  it("rejects invalid JSON before deleting anything", async () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "service-role-key";
+
+    const response = await deleteAccount.handler({
+      httpMethod: "POST",
+      headers: { authorization: "Bearer session-token" },
+      body: "{",
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(parseBody(response).error).toBe("Invalid JSON body.");
+  });
+
+  it("requires explicit confirmation before deleting anything", async () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "service-role-key";
+
+    const response = await deleteAccount.handler({
+      httpMethod: "POST",
+      headers: { authorization: "Bearer session-token" },
+      body: JSON.stringify({ confirm: false }),
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(parseBody(response).error).toBe("Account deletion confirmation is required.");
+  });
 });
