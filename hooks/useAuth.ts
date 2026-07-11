@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { getRuntimeConfig } from "@/lib/runtimeConfig";
 import { resetRevenueCatUser } from "@/lib/revenuecat";
+import { parseSupabaseOAuthRedirect } from "@/lib/oauthRedirect";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
@@ -130,7 +131,36 @@ export function useAuth(): UseAuthResult {
       throw new Error("Google OAuth URL was not returned.");
     }
 
-    await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    const authResult = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    if (authResult.type !== "success") {
+      throw new Error("Google sign-in was cancelled.");
+    }
+
+    const params = parseSupabaseOAuthRedirect(authResult.url);
+    if (params.error) {
+      throw new Error(params.errorDescription ?? params.error);
+    }
+
+    if (params.code) {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code);
+      if (exchangeError) {
+        throw exchangeError;
+      }
+      return;
+    }
+
+    if (params.accessToken && params.refreshToken) {
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: params.accessToken,
+        refresh_token: params.refreshToken,
+      });
+      if (sessionError) {
+        throw sessionError;
+      }
+      return;
+    }
+
+    throw new Error("Google sign-in did not return a session.");
   }, []);
 
   return useMemo(
