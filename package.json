@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
+    "verify:release": "npm run type-check && npm test && npx expo-doctor && npx expo export -p web && npm run test:e2e",
     "build:preview:ios": "npx eas-cli@latest build --platform ios --profile preview",
     "build:preview:android": "npx eas-cli@latest build --platform android --profile preview",
     "build:simulator:ios": "npx eas-cli@latest build --platform ios --profile ios-simulator",

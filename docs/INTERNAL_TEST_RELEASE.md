@@ -41,11 +41,7 @@ Server-side Netlify environment variables:
 Run:
 
 ```bash
-npm run type-check
-npm run test
-npx expo-doctor
-npx expo export -p web
-npm run test:e2e
+npm run verify:release
 ```
 
 Expected:

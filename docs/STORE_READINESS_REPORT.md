@@ -13,6 +13,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e`
+- Combined local release gate passes: `npm run verify:release`
 - EAS archive inspection succeeds for iOS simulator and Android preview profiles.
 - EAS Android preview pre-build inspection succeeds.
 
@@ -58,6 +59,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Enabled EAS preview build auto-increment so repeated TestFlight / Play internal-track builds do not collide on native build numbers.
 - Added typed `DELETE` account-deletion confirmation and E2E coverage for the non-destructive confirmation gate.
 - Made Terms of Service and Privacy Policy directly accessible from the sign-up screen.
+- Added a single `npm run verify:release` gate and wired Netlify deploys to run the same local release checks.
 
 ## Needs External Configuration
 
