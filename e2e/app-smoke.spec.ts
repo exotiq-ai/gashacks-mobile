@@ -67,6 +67,16 @@ test("station finder accepts manual searches and shows a result state", async ({
   await expect(page.getByText(/Near: 80202|No stations found|Live station lookup failed/)).toBeVisible();
 });
 
+test("station finder recovers from blocked location permission", async ({ page }) => {
+  await page.context().clearPermissions();
+  await completeFirstLaunch(page);
+  await page.goto("/stations", { waitUntil: "domcontentloaded" });
+
+  await page.getByText("Find E85 Near Me").click();
+  await expect(page.getByText("Location access was blocked. Enter a city, state, or ZIP code to search instead.")).toBeVisible();
+  await expect(page.getByPlaceholder("City, state, or ZIP")).toBeFocused();
+});
+
 test("settings exposes legal, subscription, and account deletion affordances", async ({ page }) => {
   await completeFirstLaunch(page);
   await page.goto("/settings", { waitUntil: "domcontentloaded" });

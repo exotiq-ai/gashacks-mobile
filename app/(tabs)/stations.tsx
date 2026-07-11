@@ -7,7 +7,7 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import { buildMapsUrl, fetchNearbyE85Stations, getDistanceBadgeColor, type Station } from "@/lib/stations";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActionSheetIOS,
   Alert,
@@ -34,6 +34,7 @@ const FALLBACK_LOCATION = {
 export default function StationsScreen() {
   const { isPro, entitlements } = useEntitlements();
   const insets = useSafeAreaInsets();
+  const manualInputRef = useRef<TextInput>(null);
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(false);
   const [radiusMiles, setRadiusMiles] = useState(25);
@@ -50,7 +51,10 @@ export default function StationsScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setError("Location access was blocked. Search by city or ZIP instead.");
+        setStations([]);
+        setLocationLabel(null);
+        setError("Location access was blocked. Enter a city, state, or ZIP code to search instead.");
+        requestAnimationFrame(() => manualInputRef.current?.focus());
         return;
       }
 
@@ -204,8 +208,12 @@ export default function StationsScreen() {
             color={colors.text.secondary}
           />
           <TextInput
+            ref={manualInputRef}
             value={manualLocation}
-            onChangeText={setManualLocation}
+            onChangeText={(value) => {
+              setManualLocation(value);
+              if (error) setError(null);
+            }}
             placeholder="City, state, or ZIP"
             placeholderTextColor={colors.text.muted}
             returnKeyType="search"
