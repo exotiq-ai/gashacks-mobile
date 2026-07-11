@@ -96,6 +96,24 @@ describe("fetchNearbyE85Stations", () => {
     vi.unstubAllGlobals();
   });
 
+  it("uses the Netlify function path on web previews when no station API is configured", async () => {
+    vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "");
+    vi.stubGlobal("window", {});
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ stations: [] }),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchNearbyE85Stations({ location: "80202", radiusMiles: 25 });
+
+    const firstCall = fetchMock.mock.calls[0] as unknown as [string];
+    expect(String(firstCall[0])).toContain("/.netlify/functions/stations?");
+
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
   it("falls back to curated E85 stations when NREL cannot be reached", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       throw new Error("DNS failed");

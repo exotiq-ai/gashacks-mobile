@@ -70,6 +70,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Aligned the default RevenueCat entitlement ID and env examples to `pro`, matching store metadata and RevenueCat config tests.
 - Gated Apple Sign In display by platform/runtime availability so unsupported Android/web surfaces do not show a dead Apple login button.
 - Completed Google OAuth redirect handling by detecting cancellation, provider errors, auth codes, and implicit session tokens before treating sign-in as successful.
+- Routed station lookup through runtime config with a web Netlify-function fallback, keeping station API behavior aligned with production config validation.
 
 ## Needs External Configuration
 

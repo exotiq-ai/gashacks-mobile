@@ -1,3 +1,5 @@
+import { getRuntimeConfig } from "./runtimeConfig";
+
 export type Station = {
   id: number;
   name: string;
@@ -181,7 +183,9 @@ export function buildNrelStationParams(input: StationSearchInput): URLSearchPara
 }
 
 function getStationsApiUrl() {
-  return process.env.EXPO_PUBLIC_STATIONS_API_URL?.trim() ?? "";
+  const configured = getRuntimeConfig().stationsApiUrl;
+  if (configured) return configured;
+  return typeof window !== "undefined" ? "/.netlify/functions/stations" : "";
 }
 
 function distanceMiles(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }) {
