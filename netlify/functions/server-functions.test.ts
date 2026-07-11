@@ -95,6 +95,38 @@ describe("receipt-scan function", () => {
     expect(parseBody(response).error).toBe("Unsupported receipt image type.");
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("keeps blank receipt numbers empty instead of converting them to zero", async () => {
+    process.env.OPENAI_API_KEY = "openai-test-key";
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        output_text: JSON.stringify({
+          stationName: "Shell",
+          gallonsE85: "",
+          gallonsPump: "   ",
+          pricePerGalE85: "$",
+          totalCost: null,
+          confidence: "",
+        }),
+      }),
+    })));
+
+    const response = await receiptScan.handler({
+      httpMethod: "POST",
+      body: JSON.stringify({ imageBase64: "x".repeat(24), mimeType: "image/jpeg" }),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(parseBody(response)).toMatchObject({
+      stationName: "Shell",
+      gallonsE85: null,
+      gallonsPump: null,
+      pricePerGalE85: null,
+      totalCost: null,
+      confidence: 0.55,
+    });
+  });
 });
 
 describe("delete-account function", () => {
