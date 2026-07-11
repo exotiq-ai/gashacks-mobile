@@ -78,7 +78,11 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
       <View style={styles.container}>
         <View style={styles.skipRow}>
           {!isLast && (
-            <Pressable onPress={skip}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Skip onboarding"
+              onPress={skip}
+            >
               <GHText tone="muted" style={styles.skipText}>
                 Skip
               </GHText>
@@ -110,6 +114,10 @@ export function OnboardingWalkthrough({ visible, onComplete }: Props) {
           {STEPS.map((_, i) => (
             <View
               key={i}
+              accessibilityRole="text"
+              accessibilityLabel={`Onboarding step ${i + 1} of ${STEPS.length}${
+                i === step ? ", current step" : ""
+              }`}
               style={[styles.dot, i === step && styles.dotActive]}
             />
           ))}

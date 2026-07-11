@@ -265,6 +265,7 @@ export default function SettingsScreen() {
               Type DELETE to confirm.
             </GHText>
             <TextInput
+              accessibilityLabel="Account deletion confirmation"
               value={deleteConfirmText}
               onChangeText={setDeleteConfirmText}
               autoCapitalize="characters"
