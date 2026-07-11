@@ -60,6 +60,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added typed `DELETE` account-deletion confirmation and E2E coverage for the non-destructive confirmation gate.
 - Made Terms of Service and Privacy Policy directly accessible from the sign-up screen.
 - Added a single `npm run verify:release` gate and wired Netlify deploys to run the same local release checks.
+- Split GitHub CI into a PR-safe verification job and a main/manual-only Netlify deployment job.
 
 ## Needs External Configuration
 
