@@ -110,9 +110,11 @@ export default function LogsScreen() {
           <View style={styles.logDivider} />
           <View style={styles.logStat}>
             <GHText tone="muted" variant="caption" style={styles.logStatLabel}>
-              PUMP
+              {item.total_cost != null ? "COST" : "PUMP"}
             </GHText>
-            <GHText tone="secondary">{pumpGal.toFixed(1)}g</GHText>
+            <GHText tone="secondary">
+              {item.total_cost != null ? `$${Number(item.total_cost).toFixed(2)}` : `${pumpGal.toFixed(1)}g`}
+            </GHText>
           </View>
         </View>
         {item.station_name && (

@@ -34,7 +34,9 @@ type ScanReceiptImageInput = {
 function normalizeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return null;
-  const parsed = Number(value.replace(/[^0-9.]/g, ""));
+  const normalized = value.replace(/[^0-9.]/g, "");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 

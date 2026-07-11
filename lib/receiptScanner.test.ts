@@ -35,4 +35,29 @@ describe("scanReceiptImage", () => {
 
     vi.unstubAllEnvs();
   });
+
+  it("keeps blank numeric scan fields empty instead of converting them to zero", async () => {
+    vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "https://scanner.test/receipt");
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        gallonsE85: "",
+        gallonsPump: "   ",
+        pricePerGalE85: "$",
+        totalCost: null,
+        confidence: "",
+      }),
+    })));
+
+    const result = await scanReceiptImage({ base64: "abc123" });
+
+    expect(result.gallonsE85).toBeNull();
+    expect(result.gallonsPump).toBeNull();
+    expect(result.pricePerGalE85).toBeNull();
+    expect(result.totalCost).toBeNull();
+    expect(result.confidence).toBe(0.55);
+
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
 });

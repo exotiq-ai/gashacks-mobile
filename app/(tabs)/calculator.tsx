@@ -111,6 +111,9 @@ export default function CalculatorScreen() {
         pumpGasGallons: data.gallonsPump ?? result.pumpGasToAdd,
         pumpGasOctane: 93,
         e85ActualEthanol: Math.round(ethanolFuelPercent * 10),
+        stationName: data.stationName,
+        userNotes: data.stationAddress,
+        totalCost: data.totalCost,
       }).then(() => {
         setSaveMessage("Receipt logged");
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

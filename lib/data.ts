@@ -50,6 +50,9 @@ type CreateFillLogInput = {
   pumpGasGallons: number;
   pumpGasOctane: number;
   e85ActualEthanol: number;
+  stationName?: string | null;
+  userNotes?: string | null;
+  totalCost?: number | null;
 };
 
 function mapVehicle(row: any): Vehicle {
@@ -223,9 +226,9 @@ export async function createFillLog(input: CreateFillLogInput): Promise<void> {
       pump_gas_gallons: input.pumpGasGallons,
       pump_gas_octane: input.pumpGasOctane,
       e85_actual_ethanol: input.e85ActualEthanol,
-      station_name: null,
-      user_notes: null,
-      total_cost: null,
+      station_name: input.stationName ?? null,
+      user_notes: input.userNotes ?? null,
+      total_cost: input.totalCost ?? null,
       created_at: new Date().toISOString(),
     };
     writeDemoJson(DEMO_LOGS_KEY, [created, ...logs]);
@@ -244,6 +247,9 @@ export async function createFillLog(input: CreateFillLogInput): Promise<void> {
     pump_gas_gallons: input.pumpGasGallons,
     pump_gas_octane: input.pumpGasOctane,
     e85_actual_ethanol: input.e85ActualEthanol,
+    station_name: input.stationName ?? null,
+    user_notes: input.userNotes ?? null,
+    total_cost: input.totalCost ?? null,
   });
 
   if (error) {

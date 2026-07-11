@@ -140,17 +140,24 @@ export function ReceiptScanner({ visible, onClose, onConfirm, isPro }: Props) {
   };
 
   const handleConfirm = () => {
+    const parseOptionalNumber = (value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      const parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     onConfirm({
-      gallonsE85: gallonsE85 ? Number(gallonsE85) : null,
-      gallonsPump: gallonsPump ? Number(gallonsPump) : null,
-      pricePerGalE85: priceE85 ? Number(priceE85) : null,
-      pricePerGalPump: pricePump ? Number(pricePump) : null,
-      totalCost: totalCost ? Number(totalCost) : null,
-      stationName: stationName || null,
-      stationAddress: stationAddress || null,
-      purchasedAt: purchasedAt || null,
-      ethanolPercent: ethanolPercent ? Number(ethanolPercent) : null,
+      gallonsE85: parseOptionalNumber(gallonsE85),
+      gallonsPump: parseOptionalNumber(gallonsPump),
+      pricePerGalE85: parseOptionalNumber(priceE85),
+      pricePerGalPump: parseOptionalNumber(pricePump),
+      totalCost: parseOptionalNumber(totalCost),
+      stationName: stationName.trim() || null,
+      stationAddress: stationAddress.trim() || null,
+      purchasedAt: purchasedAt.trim() || null,
+      ethanolPercent: parseOptionalNumber(ethanolPercent),
     });
     reset();
     onClose();
