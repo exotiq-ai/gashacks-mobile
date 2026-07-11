@@ -212,6 +212,7 @@ export default function StationsScreen() {
           />
           <TextInput
             ref={manualInputRef}
+            accessibilityLabel="City, state, or ZIP"
             value={manualLocation}
             onChangeText={(value) => {
               setManualLocation(value);

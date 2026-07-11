@@ -157,6 +157,8 @@ export default function AuthScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
               style={styles.input}
             />
           </View>
@@ -171,6 +173,8 @@ export default function AuthScreen() {
               onChangeText={setPassword}
               placeholder="••••••••"
               placeholderTextColor={colors.text.muted}
+              autoComplete={authMode === "login" ? "current-password" : "new-password"}
+              textContentType={authMode === "login" ? "password" : "newPassword"}
               secureTextEntry
               style={styles.input}
             />
