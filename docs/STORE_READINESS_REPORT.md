@@ -9,7 +9,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Verified Locally
 
 - TypeScript passes: `npm run type-check`
-- Unit tests pass: `npm test`
+- Unit and Netlify function tests pass: `npm test` (45 tests)
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e`
@@ -68,9 +68,11 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Preserved receipt scan details in saved fill logs, including station name, address notes, and total cost.
 - Fixed client and Netlify receipt parsers so blank numeric receipt fields remain empty instead of becoming zeroes.
 - Aligned the default RevenueCat entitlement ID and env examples to `pro`, matching store metadata and RevenueCat config tests.
+- Aligned Netlify preview RevenueCat entitlement config to `pro` and added regression coverage so previews do not drift from RevenueCat/store metadata.
 - Gated Apple Sign In display by platform/runtime availability so unsupported Android/web surfaces do not show a dead Apple login button.
 - Completed Google OAuth redirect handling by detecting cancellation, provider errors, auth codes, and implicit session tokens before treating sign-in as successful.
 - Routed station lookup through runtime config with a web Netlify-function fallback, keeping station API behavior aligned with production config validation.
+- Added accessibility roles, labels, disabled/busy states, and selected states across reusable buttons, sliders, preset pills, share controls, Garage selectors, paywall plans, station controls, and log filters.
 
 ## Needs External Configuration
 

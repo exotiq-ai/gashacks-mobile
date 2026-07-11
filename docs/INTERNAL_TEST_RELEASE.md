@@ -98,6 +98,7 @@ npm run submit:preview:android
   - Add vehicle
   - Set active vehicle
   - Free account upgrade prompt opens the paywall after one vehicle
+  - Vehicle picker, make/model selectors, and manual entry toggle expose clear screen-reader labels and selected states
 - Mission Control:
   - Input validation
   - Save blend configuration
@@ -109,6 +110,7 @@ npm run submit:preview:android
   - Pro user bypasses limits
 - Subscriptions:
   - Paywall loads store prices from RevenueCat only
+  - Monthly and annual plan selectors expose selected state to assistive technology
   - Purchase cancellation does not unlock Pro
   - Restore purchases works for a known active subscriber
 - Account deletion:
