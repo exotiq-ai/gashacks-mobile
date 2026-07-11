@@ -4,10 +4,11 @@ import { GHText } from "@/components/ui/GHText";
 import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as AppleAuthentication from "expo-apple-authentication";
 import * as Haptics from "expo-haptics";
 import { Redirect, useRouter } from "expo-router";
 import type { Href } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -26,7 +27,28 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
   const [submitting, setSubmitting] = useState(false);
+  const [appleSignInAvailable, setAppleSignInAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    if (Platform.OS !== "ios") {
+      setAppleSignInAvailable(false);
+      return;
+    }
+
+    AppleAuthentication.isAvailableAsync()
+      .then((available) => {
+        if (mounted) setAppleSignInAvailable(available);
+      })
+      .catch(() => {
+        if (mounted) setAppleSignInAvailable(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   if (!loading && isAuthenticated) {
     return <Redirect href="/(tabs)" />;
@@ -91,12 +113,14 @@ export default function AuthScreen() {
 
         {/* Social Auth */}
         <View style={styles.socialRow}>
-          <GHButton
-            label="Continue with Apple"
-            variant="secondary"
-            onPress={() => void handleSocial("apple")}
-            style={styles.socialBtn}
-          />
+          {appleSignInAvailable && (
+            <GHButton
+              label="Continue with Apple"
+              variant="secondary"
+              onPress={() => void handleSocial("apple")}
+              style={styles.socialBtn}
+            />
+          )}
           <GHButton
             label="Continue with Google"
             variant="secondary"

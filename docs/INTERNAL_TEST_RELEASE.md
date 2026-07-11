@@ -90,7 +90,8 @@ npm run submit:preview:android
 - Auth:
   - Email sign up/login
   - Google sign in
-  - Apple sign in (iOS device)
+  - Apple sign in button appears and works on supported iOS devices
+  - Apple sign in button is absent on Android/web
   - Terms of Service and Privacy Policy open from the sign-up screen
 - Garage:
   - Add vehicle
