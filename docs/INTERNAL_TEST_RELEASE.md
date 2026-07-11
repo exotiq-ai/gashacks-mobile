@@ -89,6 +89,7 @@ npm run submit:preview:android
   - Confirm public privacy, terms, support, and marketing URLs
 - Auth:
   - Email sign up/login
+  - Email/password fields expose autofill and screen-reader labels
   - Google sign in
   - Google sign-in cancellation returns to auth without creating a session
   - Apple sign in button appears and works on supported iOS devices
@@ -99,10 +100,12 @@ npm run submit:preview:android
   - Set active vehicle
   - Free account upgrade prompt opens the paywall after one vehicle
   - Vehicle picker, make/model selectors, and manual entry toggle expose clear screen-reader labels and selected states
+  - Manual vehicle entry fields expose clear screen-reader labels
 - Mission Control:
   - Input validation
   - Save blend configuration
   - Receipt scan/manual entry preserves station name and total cost in Fill Logs
+  - Receipt fields expose clear screen-reader labels
 - Logs:
   - New saved blend appears in list
 - Pro gating:
@@ -116,4 +119,8 @@ npm run submit:preview:android
 - Account deletion:
   - Delete Account requires a signed-in session
   - Delete Account requires typing `DELETE` before the destructive action enables
+  - Delete confirmation field exposes a clear screen-reader label
   - Netlify deletion function removes app data and the Supabase auth user
+- Native permissions:
+  - iOS prompts match camera, selected photo, and when-in-use location behavior
+  - Android manifest does not request microphone or background-location permissions

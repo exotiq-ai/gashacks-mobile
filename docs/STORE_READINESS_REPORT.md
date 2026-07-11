@@ -9,7 +9,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Verified Locally
 
 - TypeScript passes: `npm run type-check`
-- Unit and Netlify function tests pass: `npm test` (45 tests)
+- Unit, config, and Netlify function tests pass: `npm test` (48 tests)
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e`
@@ -43,6 +43,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Disabled committed Netlify preview skip-auth so deployed previews use the real auth path instead of silently entering demo mode.
 - Allowed relative Netlify function URLs for non-production web previews while keeping absolute `https://` API URL requirements for production releases.
 - Consolidated Expo native metadata into `app.config.ts`, removed stale `app.json`, preserved EAS Updates runtime settings, and changed the splash background to dark to match the app launch experience.
+- Added native app config regression coverage for bundle/package IDs, scheme, iOS permission strings, and blocked Android permissions.
 - Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
 - Removed hardcoded fallback subscription prices and savings claims from the paywall. Store-facing prices now come from RevenueCat offerings only.
 - Removed the client-side partial account-deletion fallback. Account deletion now requires a valid Supabase session token and the backend deletion function, so the app does not delete only profile data while leaving the auth account behind.
@@ -73,6 +74,8 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Completed Google OAuth redirect handling by detecting cancellation, provider errors, auth codes, and implicit session tokens before treating sign-in as successful.
 - Routed station lookup through runtime config with a web Netlify-function fallback, keeping station API behavior aligned with production config validation.
 - Added accessibility roles, labels, disabled/busy states, and selected states across reusable buttons, sliders, preset pills, share controls, Garage selectors, paywall plans, station controls, and log filters.
+- Added explicit form labels and mobile autofill hints for auth, Garage manual entry, station manual search, receipt fields, and account deletion confirmation.
+- Blocked unused Android microphone and background-location permissions from generated native manifests.
 
 ## Needs External Configuration
 
@@ -97,6 +100,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Store submission metadata packet is reviewed: `docs/STORE_SUBMISSION_METADATA.md`.
 - Subscription group, monthly product, annual product, localized descriptions, pricing, and review screenshot are configured.
 - Privacy policy URL, terms URL, support URL/email, and privacy nutrition answers are ready.
+- Native permission declarations match actual app behavior, including no microphone or background-location access.
 - App icons, screenshots, preview assets, category, age rating, and subscription metadata are ready.
 - Public legal/support URLs replace all `TBD` values in `docs/STORE_SUBMISSION_METADATA.md`.
 
