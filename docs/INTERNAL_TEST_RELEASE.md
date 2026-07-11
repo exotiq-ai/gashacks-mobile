@@ -116,6 +116,7 @@ npm run submit:preview:android
   - Paywall loads store prices from RevenueCat only
   - Monthly and annual plan selectors expose selected state to assistive technology
   - Purchase cancellation does not unlock Pro
+  - Purchase failures surface an error without unlocking Pro
   - Restore purchases works for a known active subscriber
 - Account deletion:
   - Delete Account requires a signed-in session

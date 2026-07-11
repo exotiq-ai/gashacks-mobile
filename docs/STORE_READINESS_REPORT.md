@@ -9,7 +9,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Verified Locally
 
 - TypeScript passes: `npm run type-check`
-- Unit, config, and Netlify function tests pass: `npm test` (51 tests)
+- Unit, config, subscription, and Netlify function tests pass: `npm test` (56 tests)
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e` (7 Playwright mobile-web tests)
@@ -72,6 +72,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added Playwright E2E coverage for manual receipt logging from Calculator through Fill Logs, including station name and total cost display.
 - Aligned the default RevenueCat entitlement ID and env examples to `pro`, matching store metadata and RevenueCat config tests.
 - Aligned Netlify preview RevenueCat entitlement config to `pro` and added regression coverage so previews do not drift from RevenueCat/store metadata.
+- Added RevenueCat wrapper coverage for configured entitlement detection, purchase cancellation, purchase errors, restore success, Android key selection, and unsupported web offerings.
 - Gated Apple Sign In display by platform/runtime availability so unsupported Android/web surfaces do not show a dead Apple login button.
 - Completed Google OAuth redirect handling by detecting cancellation, provider errors, auth codes, and implicit session tokens before treating sign-in as successful.
 - Routed station lookup through runtime config with a web Netlify-function fallback, keeping station API behavior aligned with production config validation.
