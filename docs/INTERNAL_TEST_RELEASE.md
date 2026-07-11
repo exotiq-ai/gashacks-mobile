@@ -91,6 +91,7 @@ npm run submit:preview:android
   - Email sign up/login
   - Google sign in
   - Apple sign in (iOS device)
+  - Terms of Service and Privacy Policy open from the sign-up screen
 - Garage:
   - Add vehicle
   - Set active vehicle

@@ -5,11 +5,13 @@ import { colors, spacing, typography } from "@/constants/theme";
 import { useAuth } from "@/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
+import type { Href } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -19,6 +21,7 @@ import {
 export default function AuthScreen() {
   const { isAuthenticated, loading, signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
@@ -171,9 +174,36 @@ export default function AuthScreen() {
           />
         </GHCard>
 
-        <GHText tone="muted" variant="caption" style={styles.terms}>
-          By continuing, you agree to our Terms of Service and Privacy Policy.
-        </GHText>
+        <View style={styles.terms}>
+          <GHText tone="muted" variant="caption" style={styles.termsText}>
+            By continuing, you agree to our
+          </GHText>
+          <View style={styles.termsLinks}>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Terms of Service"
+              onPress={() => router.push("/terms" as Href)}
+              hitSlop={8}
+            >
+              <GHText tone="accent" variant="caption" style={styles.termsLink}>
+                Terms of Service
+              </GHText>
+            </Pressable>
+            <GHText tone="muted" variant="caption">
+              and
+            </GHText>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Privacy Policy"
+              onPress={() => router.push("/privacy" as Href)}
+              hitSlop={8}
+            >
+              <GHText tone="accent" variant="caption" style={styles.termsLink}>
+                Privacy Policy
+              </GHText>
+            </Pressable>
+          </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -246,7 +276,21 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   terms: {
-    textAlign: "center",
+    alignItems: "center",
+    gap: 2,
     marginTop: spacing.sm,
+  },
+  termsText: {
+    textAlign: "center",
+  },
+  termsLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: spacing.xs,
+  },
+  termsLink: {
+    fontFamily: typography.fontFamily.semibold,
   },
 });
