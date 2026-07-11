@@ -78,6 +78,28 @@ test("station finder recovers from blocked location permission", async ({ page }
   await expect(page.getByLabel("City, state, or ZIP")).toBeFocused();
 });
 
+test("logs manual receipt details from the calculator", async ({ page }) => {
+  await completeFirstLaunch(page);
+  await page.goto("/calculator", { waitUntil: "domcontentloaded" });
+
+  await page.getByRole("button", { name: "Log from Receipt" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByText("Receipt", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Enter Manually Instead" }).click();
+  await page.getByLabel("Station Name").fill("Shell E2E");
+  await page.getByLabel("Station Address").fill("123 Test Ave");
+  await page.getByLabel("E85 Gallons").fill("3.2");
+  await page.getByLabel("Pump Gas Gallons").fill("7.1");
+  await page.getByLabel("Actual Total (override)").fill("42.50");
+  await page.getByRole("button", { name: "Save Fill" }).click();
+
+  await expect(page.getByText("Receipt logged")).toBeVisible();
+  await page.goto("/logs", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("1 fill recorded")).toBeVisible();
+  await expect(page.getByText("Shell E2E")).toBeVisible();
+  await expect(page.getByText("$42.50")).toBeVisible();
+});
+
 test("settings exposes legal, subscription, and account deletion affordances", async ({ page }) => {
   await completeFirstLaunch(page);
   await page.goto("/settings", { waitUntil: "domcontentloaded" });
