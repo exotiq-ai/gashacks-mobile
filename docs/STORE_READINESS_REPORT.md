@@ -63,6 +63,13 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Split GitHub CI into a PR-safe verification job and a main/manual-only Netlify deployment job.
 - Blocked production runtime config from accepting preview Netlify function URLs for receipt scanning, station lookup, and account deletion.
 - Blocked production runtime config from accepting obvious placeholder/test Supabase, Google OAuth, and RevenueCat public values.
+- Added store submission metadata covering listing copy, privacy/data-safety draft, subscription review notes, screenshot requirements, and console checklist.
+- Improved station finder recovery when location permission is blocked by clearing stale results, showing manual-search guidance, focusing the city/ZIP input, and adding E2E coverage.
+- Preserved receipt scan details in saved fill logs, including station name, address notes, and total cost.
+- Fixed client and Netlify receipt parsers so blank numeric receipt fields remain empty instead of becoming zeroes.
+- Aligned the default RevenueCat entitlement ID and env examples to `pro`, matching store metadata and RevenueCat config tests.
+- Gated Apple Sign In display by platform/runtime availability so unsupported Android/web surfaces do not show a dead Apple login button.
+- Completed Google OAuth redirect handling by detecting cancellation, provider errors, auth codes, and implicit session tokens before treating sign-in as successful.
 
 ## Needs External Configuration
 
@@ -78,7 +85,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Rotate and re-check `OPENAI_API_KEY` in Netlify. It is present on the linked Netlify project, but keys pasted into chat should be treated as burned.
 - Confirm Supabase auth providers and redirect URLs for web, iOS, and Android.
 - Confirm Apple Sign In capability for `com.exotiq.gashacks` and service configuration `G39773LD27.com.exotiq.gashacks`.
-- Configure RevenueCat products, offerings, entitlements, sandbox testers, and App Store / Play Store integrations.
+- Configure RevenueCat products, offerings, entitlement `pro`, sandbox testers, and App Store / Play Store integrations.
 
 ## Store Console Checklist
 
@@ -88,6 +95,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Subscription group, monthly product, annual product, localized descriptions, pricing, and review screenshot are configured.
 - Privacy policy URL, terms URL, support URL/email, and privacy nutrition answers are ready.
 - App icons, screenshots, preview assets, category, age rating, and subscription metadata are ready.
+- Public legal/support URLs replace all `TBD` values in `docs/STORE_SUBMISSION_METADATA.md`.
 
 ## Remaining QA
 
@@ -97,12 +105,14 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Test on real iPhone:
   - Apple Sign In
   - Google Sign In
+  - Google OAuth cancellation and successful redirect handling
   - receipt photo picker/camera permission flow
   - location permission denial and success
   - subscription purchase, restore, cancellation, and reinstall restore
   - account deletion and Supabase auth cleanup
 - Test on physical Android:
   - Google Sign In
+  - Google OAuth cancellation and successful redirect handling
   - receipt image flow
   - location search
   - Play Billing purchase and restore behavior

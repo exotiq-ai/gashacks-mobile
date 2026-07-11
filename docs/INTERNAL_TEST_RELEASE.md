@@ -90,6 +90,7 @@ npm run submit:preview:android
 - Auth:
   - Email sign up/login
   - Google sign in
+  - Google sign-in cancellation returns to auth without creating a session
   - Apple sign in button appears and works on supported iOS devices
   - Apple sign in button is absent on Android/web
   - Terms of Service and Privacy Policy open from the sign-up screen
@@ -100,6 +101,7 @@ npm run submit:preview:android
 - Mission Control:
   - Input validation
   - Save blend configuration
+  - Receipt scan/manual entry preserves station name and total cost in Fill Logs
 - Logs:
   - New saved blend appears in list
 - Pro gating:
