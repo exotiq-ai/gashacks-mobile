@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { getConfigHealth, getConfigIssues, getRuntimeConfig } from "./runtimeConfig";
 
 describe("runtime config", () => {
@@ -49,6 +50,12 @@ describe("runtime config", () => {
 
     expect(getRuntimeConfig().revenueCatEntitlementId).toBe("pro");
     expect(getConfigIssues()).not.toContain("EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID is missing");
+  });
+
+  it("keeps the Netlify preview entitlement aligned with RevenueCat config", () => {
+    const netlifyConfig = readFileSync("netlify.toml", "utf8");
+
+    expect(netlifyConfig).toContain('EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID = "pro"');
   });
 
   it("requires native release service configuration for production", () => {

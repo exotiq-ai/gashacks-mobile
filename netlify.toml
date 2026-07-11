@@ -12,7 +12,7 @@
   EXPO_PUBLIC_RECEIPT_SCAN_API_URL = "/.netlify/functions/receipt-scan"
   EXPO_PUBLIC_STATIONS_API_URL = "/.netlify/functions/stations"
   EXPO_PUBLIC_ACCOUNT_DELETE_API_URL = "/.netlify/functions/delete-account"
-  EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID = "Gas Hacks Pro"
+  EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID = "pro"
 
 [[redirects]]
   from = "/*"
