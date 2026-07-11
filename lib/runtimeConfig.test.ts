@@ -44,6 +44,13 @@ describe("runtime config", () => {
     );
   });
 
+  it("defaults to the RevenueCat entitlement ID used in store metadata", () => {
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID", "");
+
+    expect(getRuntimeConfig().revenueCatEntitlementId).toBe("pro");
+    expect(getConfigIssues()).not.toContain("EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID is missing");
+  });
+
   it("requires native release service configuration for production", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");

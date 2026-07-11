@@ -43,7 +43,7 @@ type ConfigHealth = {
   ok: boolean;
 };
 
-const DEFAULT_REVENUECAT_ENTITLEMENT_ID = "Gas Hacks Pro";
+const DEFAULT_REVENUECAT_ENTITLEMENT_ID = "pro";
 const PREVIEW_SUPABASE_URL = "https://feicgarueqllkpzgewul.supabase.co";
 
 function isProduction(appEnv: string) {
