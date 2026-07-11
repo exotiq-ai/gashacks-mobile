@@ -62,6 +62,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Added a single `npm run verify:release` gate and wired Netlify deploys to run the same local release checks.
 - Split GitHub CI into a PR-safe verification job and a main/manual-only Netlify deployment job.
 - Blocked production runtime config from accepting preview Netlify function URLs for receipt scanning, station lookup, and account deletion.
+- Blocked production runtime config from accepting obvious placeholder/test Supabase, Google OAuth, and RevenueCat public values.
 
 ## Needs External Configuration
 

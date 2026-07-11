@@ -6,6 +6,11 @@ describe("runtime config", () => {
     vi.unstubAllEnvs();
   });
 
+  const productionSupabaseAnonKey = "sb_publishable_livevalue";
+  const productionGoogleClientId = "1234567890-production.apps.googleusercontent.com";
+  const productionRevenueCatIosKey = "appl_livevalue";
+  const productionRevenueCatAndroidKey = "goog_livevalue";
+
   it("does not silently fall back to production Supabase credentials", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "");
@@ -42,8 +47,8 @@ describe("runtime config", () => {
   it("requires native release service configuration for production", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
-    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
-    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", productionSupabaseAnonKey);
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", productionGoogleClientId);
     vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "");
     vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "");
     vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "");
@@ -83,8 +88,8 @@ describe("runtime config", () => {
   it("requires absolute API URLs for production releases", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
-    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
-    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", productionSupabaseAnonKey);
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", productionGoogleClientId);
     vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "/.netlify/functions/receipt-scan");
     vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "/.netlify/functions/stations");
     vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "/.netlify/functions/delete-account");
@@ -101,8 +106,8 @@ describe("runtime config", () => {
   it("rejects preview API hosts for production releases", () => {
     vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
     vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
-    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
-    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", productionSupabaseAnonKey);
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", productionGoogleClientId);
     vi.stubEnv(
       "EXPO_PUBLIC_RECEIPT_SCAN_API_URL",
       "https://gashacks-mobile-preview.netlify.app/.netlify/functions/receipt-scan",
@@ -115,8 +120,8 @@ describe("runtime config", () => {
       "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL",
       "https://gashacks-mobile-preview.netlify.app/.netlify/functions/delete-account",
     );
-    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_IOS_KEY", "appl_test");
-    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY", "goog_test");
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_IOS_KEY", productionRevenueCatIosKey);
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY", productionRevenueCatAndroidKey);
 
     expect(getConfigHealth().ok).toBe(false);
     expect(getConfigIssues()).toEqual(
@@ -124,6 +129,28 @@ describe("runtime config", () => {
         "EXPO_PUBLIC_RECEIPT_SCAN_API_URL must not point at the preview Netlify host",
         "EXPO_PUBLIC_STATIONS_API_URL must not point at the preview Netlify host",
         "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must not point at the preview Netlify host",
+      ]),
+    );
+  });
+
+  it("rejects placeholder public keys for production releases", () => {
+    vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv("EXPO_PUBLIC_RECEIPT_SCAN_API_URL", "https://api.gashacks.app/receipt-scan");
+    vi.stubEnv("EXPO_PUBLIC_STATIONS_API_URL", "https://api.gashacks.app/stations");
+    vi.stubEnv("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL", "https://api.gashacks.app/delete-account");
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_IOS_KEY", "appl_test");
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY", "goog_test");
+
+    expect(getConfigHealth().ok).toBe(false);
+    expect(getConfigIssues()).toEqual(
+      expect.arrayContaining([
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY must not be a placeholder or test value",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID must not be a placeholder or test value",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY must not be a placeholder or test value",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY must not be a placeholder or test value",
       ]),
     );
   });

@@ -20,8 +20,10 @@ type ConfigHealth = {
   supabaseUrlLooksValid: boolean;
   supabaseAnonKeyPresent: boolean;
   supabaseAnonKeyLooksValid: boolean;
+  supabaseAnonKeyLooksPlaceholder: boolean;
   googleClientIdPresent: boolean;
   googleClientIdLooksValid: boolean;
+  googleClientIdLooksPlaceholder: boolean;
   receiptScanApiUrlPresent: boolean;
   receiptScanApiUrlLooksValid: boolean;
   receiptScanApiUrlUsesPreviewHost: boolean;
@@ -32,7 +34,9 @@ type ConfigHealth = {
   accountDeleteApiUrlLooksValid: boolean;
   accountDeleteApiUrlUsesPreviewHost: boolean;
   revenueCatIosKeyPresent: boolean;
+  revenueCatIosKeyLooksPlaceholder: boolean;
   revenueCatAndroidKeyPresent: boolean;
+  revenueCatAndroidKeyLooksPlaceholder: boolean;
   revenueCatEntitlementIdPresent: boolean;
   skipAuthDisabledForProduction: boolean;
   proTestingDisabledForProduction: boolean;
@@ -63,6 +67,18 @@ function looksLikeApiUrl(value: string, production: boolean) {
 
 function usesPreviewHost(value: string) {
   return value.includes("gashacks-mobile-preview.netlify.app");
+}
+
+function looksLikePlaceholder(value: string) {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+  return (
+    normalized.includes("placeholder") ||
+    normalized.includes("your-") ||
+    normalized.endsWith("_test") ||
+    normalized === "test" ||
+    normalized === "client.apps.googleusercontent.com"
+  );
 }
 
 function readEnv() {
@@ -107,8 +123,10 @@ export function getConfigHealth(): ConfigHealth {
     supabaseAnonKeyLooksValid:
       env.supabaseAnonKey.startsWith("sb_publishable_") ||
       env.supabaseAnonKey.startsWith("eyJ"),
+    supabaseAnonKeyLooksPlaceholder: looksLikePlaceholder(env.supabaseAnonKey),
     googleClientIdPresent: Boolean(env.googleWebClientId),
     googleClientIdLooksValid: env.googleWebClientId.endsWith(".apps.googleusercontent.com"),
+    googleClientIdLooksPlaceholder: looksLikePlaceholder(env.googleWebClientId),
     receiptScanApiUrlPresent: Boolean(env.receiptScanApiUrl),
     receiptScanApiUrlLooksValid:
       !env.receiptScanApiUrl || looksLikeApiUrl(env.receiptScanApiUrl, env.production),
@@ -122,7 +140,9 @@ export function getConfigHealth(): ConfigHealth {
       !env.accountDeleteApiUrl || looksLikeApiUrl(env.accountDeleteApiUrl, env.production),
     accountDeleteApiUrlUsesPreviewHost: usesPreviewHost(env.accountDeleteApiUrl),
     revenueCatIosKeyPresent: Boolean(env.revenueCatIosKey),
+    revenueCatIosKeyLooksPlaceholder: looksLikePlaceholder(env.revenueCatIosKey),
     revenueCatAndroidKeyPresent: Boolean(env.revenueCatAndroidKey),
+    revenueCatAndroidKeyLooksPlaceholder: looksLikePlaceholder(env.revenueCatAndroidKey),
     revenueCatEntitlementIdPresent: Boolean(env.revenueCatEntitlementId),
     skipAuthDisabledForProduction: !env.production || !env.skipAuthRequested,
     proTestingDisabledForProduction: !env.production || !env.unlockProForTestingRequested,
@@ -142,6 +162,8 @@ export function getConfigHealth(): ConfigHealth {
 
   health.ok = env.production
     ? commonOk &&
+      !health.supabaseAnonKeyLooksPlaceholder &&
+      !health.googleClientIdLooksPlaceholder &&
       health.receiptScanApiUrlPresent &&
       health.receiptScanApiUrlLooksValid &&
       !health.receiptScanApiUrlUsesPreviewHost &&
@@ -152,7 +174,9 @@ export function getConfigHealth(): ConfigHealth {
       health.accountDeleteApiUrlLooksValid &&
       !health.accountDeleteApiUrlUsesPreviewHost &&
       health.revenueCatIosKeyPresent &&
+      !health.revenueCatIosKeyLooksPlaceholder &&
       health.revenueCatAndroidKeyPresent &&
+      !health.revenueCatAndroidKeyLooksPlaceholder &&
       health.revenueCatEntitlementIdPresent
     : commonOk;
 
@@ -190,9 +214,15 @@ export function getConfigIssues(): string[] {
   if (health.supabaseAnonKeyPresent && !health.supabaseAnonKeyLooksValid) {
     issues.push("EXPO_PUBLIC_SUPABASE_ANON_KEY format is unexpected");
   }
+  if (health.production && health.supabaseAnonKeyLooksPlaceholder) {
+    issues.push("EXPO_PUBLIC_SUPABASE_ANON_KEY must not be a placeholder or test value");
+  }
   if (!health.googleClientIdPresent) issues.push("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is missing");
   if (health.googleClientIdPresent && !health.googleClientIdLooksValid) {
     issues.push("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID format is unexpected");
+  }
+  if (health.production && health.googleClientIdLooksPlaceholder) {
+    issues.push("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID must not be a placeholder or test value");
   }
   if (health.production && !health.receiptScanApiUrlPresent) {
     issues.push("EXPO_PUBLIC_RECEIPT_SCAN_API_URL is missing");
@@ -224,8 +254,14 @@ export function getConfigIssues(): string[] {
   if (health.production && !health.revenueCatIosKeyPresent) {
     issues.push("EXPO_PUBLIC_REVENUECAT_IOS_KEY is missing");
   }
+  if (health.production && health.revenueCatIosKeyLooksPlaceholder) {
+    issues.push("EXPO_PUBLIC_REVENUECAT_IOS_KEY must not be a placeholder or test value");
+  }
   if (health.production && !health.revenueCatAndroidKeyPresent) {
     issues.push("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY is missing");
+  }
+  if (health.production && health.revenueCatAndroidKeyLooksPlaceholder) {
+    issues.push("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY must not be a placeholder or test value");
   }
   if (!health.revenueCatEntitlementIdPresent) {
     issues.push("EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID is missing");
