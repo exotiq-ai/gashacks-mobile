@@ -149,6 +149,7 @@ export default function AuthScreen() {
               EMAIL
             </GHText>
             <TextInput
+              accessibilityLabel="Email address"
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
@@ -165,6 +166,7 @@ export default function AuthScreen() {
               PASSWORD
             </GHText>
             <TextInput
+              accessibilityLabel="Password"
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"

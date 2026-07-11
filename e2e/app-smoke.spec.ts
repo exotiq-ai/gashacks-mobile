@@ -8,7 +8,8 @@ async function completeFirstLaunch(page: Page) {
   await expect(page.getByText("Safety First")).toBeVisible();
   await page.getByText(/I Understand/).click();
   await expect(page.getByText("Add Your Ride")).toBeVisible();
-  await page.getByText("Skip").click();
+  await expect(page.getByLabel("Onboarding step 1 of 5, current step")).toBeVisible();
+  await page.getByRole("button", { name: "Skip onboarding" }).click();
 }
 
 test("completes onboarding and reaches the main tabs", async ({ page }) => {
