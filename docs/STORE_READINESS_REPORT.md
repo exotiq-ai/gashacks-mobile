@@ -9,7 +9,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 ## Verified Locally
 
 - TypeScript passes: `npm run type-check`
-- Unit, config, and Netlify function tests pass: `npm test` (48 tests)
+- Unit, config, and Netlify function tests pass: `npm test` (51 tests)
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
 - E2E smoke tests pass: `npm run test:e2e` (7 Playwright mobile-web tests)
@@ -47,6 +47,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Scrubbed ignored local `.env` values so local Expo commands no longer load previously exposed chat keys or emit stale Google client warnings.
 - Removed hardcoded fallback subscription prices and savings claims from the paywall. Store-facing prices now come from RevenueCat offerings only.
 - Removed the client-side partial account-deletion fallback. Account deletion now requires a valid Supabase session token and the backend deletion function, so the app does not delete only profile data while leaving the auth account behind.
+- Hardened client-side account deletion error handling so server errors, invalid error JSON, and network failures surface clean user-facing messages.
 - Added RevenueCat identity sync to the signed-in Supabase user before entitlement checks and paywall offering fetches, reducing anonymous-purchase and restore edge cases.
 - Added RevenueCat identity reset during sign-out so the next app user does not inherit the previous user's purchaser identity on shared devices.
 - Stopped treating web as Android for RevenueCat config checks, so web preview no longer reports missing native subscription keys.

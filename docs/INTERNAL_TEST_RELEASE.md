@@ -121,6 +121,7 @@ npm run submit:preview:android
   - Delete Account requires a signed-in session
   - Delete Account requires typing `DELETE` before the destructive action enables
   - Delete confirmation field exposes a clear screen-reader label
+  - Network and backend deletion errors surface a clear user-facing error
   - Netlify deletion function removes app data and the Supabase auth user
 - Native permissions:
   - iOS prompts match camera, selected photo, and when-in-use location behavior
