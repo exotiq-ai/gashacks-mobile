@@ -20,14 +20,22 @@ export async function deleteAccountWithToken(accessToken: string): Promise<Delet
     };
   }
 
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ confirm: true }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ confirm: true }),
+    });
+  } catch {
+    return {
+      success: false,
+      error: "Account deletion failed. Check your connection and try again.",
+    };
+  }
 
   if (response.ok) return { success: true };
 
