@@ -5,7 +5,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
   ViewStyle,
 } from "react-native";
@@ -38,8 +37,6 @@ export function GHSlider({
   style,
 }: Props) {
   const trackRef = useRef<View>(null);
-  const trackWidth = useSharedValue(0);
-  const isDragging = useSharedValue(false);
 
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
   const snap = (v: number) => Math.round(v / step) * step;
@@ -95,7 +92,13 @@ export function GHSlider({
       </View>
 
       <View style={styles.sliderRow}>
-        <Pressable onPress={decrement} style={styles.stepper}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Decrease ${label}`}
+          hitSlop={8}
+          onPress={decrement}
+          style={styles.stepper}
+        >
           <GHText tone="accent" style={styles.stepperText}>
             −
           </GHText>
@@ -121,7 +124,13 @@ export function GHSlider({
           <Animated.View style={[styles.thumb, thumbStyle]} />
         </View>
 
-        <Pressable onPress={increment} style={styles.stepper}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Increase ${label}`}
+          hitSlop={8}
+          onPress={increment}
+          style={styles.stepper}
+        >
           <GHText tone="accent" style={styles.stepperText}>
             +
           </GHText>
