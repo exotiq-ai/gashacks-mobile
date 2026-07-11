@@ -24,10 +24,13 @@ type ConfigHealth = {
   googleClientIdLooksValid: boolean;
   receiptScanApiUrlPresent: boolean;
   receiptScanApiUrlLooksValid: boolean;
+  receiptScanApiUrlUsesPreviewHost: boolean;
   stationsApiUrlPresent: boolean;
   stationsApiUrlLooksValid: boolean;
+  stationsApiUrlUsesPreviewHost: boolean;
   accountDeleteApiUrlPresent: boolean;
   accountDeleteApiUrlLooksValid: boolean;
+  accountDeleteApiUrlUsesPreviewHost: boolean;
   revenueCatIosKeyPresent: boolean;
   revenueCatAndroidKeyPresent: boolean;
   revenueCatEntitlementIdPresent: boolean;
@@ -56,6 +59,10 @@ function truthyEnv(value: string | undefined) {
 function looksLikeApiUrl(value: string, production: boolean) {
   if (value.startsWith("https://")) return true;
   return !production && value.startsWith("/.netlify/functions/");
+}
+
+function usesPreviewHost(value: string) {
+  return value.includes("gashacks-mobile-preview.netlify.app");
 }
 
 function readEnv() {
@@ -105,12 +112,15 @@ export function getConfigHealth(): ConfigHealth {
     receiptScanApiUrlPresent: Boolean(env.receiptScanApiUrl),
     receiptScanApiUrlLooksValid:
       !env.receiptScanApiUrl || looksLikeApiUrl(env.receiptScanApiUrl, env.production),
+    receiptScanApiUrlUsesPreviewHost: usesPreviewHost(env.receiptScanApiUrl),
     stationsApiUrlPresent: Boolean(env.stationsApiUrl),
     stationsApiUrlLooksValid:
       !env.stationsApiUrl || looksLikeApiUrl(env.stationsApiUrl, env.production),
+    stationsApiUrlUsesPreviewHost: usesPreviewHost(env.stationsApiUrl),
     accountDeleteApiUrlPresent: Boolean(env.accountDeleteApiUrl),
     accountDeleteApiUrlLooksValid:
       !env.accountDeleteApiUrl || looksLikeApiUrl(env.accountDeleteApiUrl, env.production),
+    accountDeleteApiUrlUsesPreviewHost: usesPreviewHost(env.accountDeleteApiUrl),
     revenueCatIosKeyPresent: Boolean(env.revenueCatIosKey),
     revenueCatAndroidKeyPresent: Boolean(env.revenueCatAndroidKey),
     revenueCatEntitlementIdPresent: Boolean(env.revenueCatEntitlementId),
@@ -134,10 +144,13 @@ export function getConfigHealth(): ConfigHealth {
     ? commonOk &&
       health.receiptScanApiUrlPresent &&
       health.receiptScanApiUrlLooksValid &&
+      !health.receiptScanApiUrlUsesPreviewHost &&
       health.stationsApiUrlPresent &&
       health.stationsApiUrlLooksValid &&
+      !health.stationsApiUrlUsesPreviewHost &&
       health.accountDeleteApiUrlPresent &&
       health.accountDeleteApiUrlLooksValid &&
+      !health.accountDeleteApiUrlUsesPreviewHost &&
       health.revenueCatIosKeyPresent &&
       health.revenueCatAndroidKeyPresent &&
       health.revenueCatEntitlementIdPresent
@@ -187,17 +200,26 @@ export function getConfigIssues(): string[] {
   if (health.receiptScanApiUrlPresent && !health.receiptScanApiUrlLooksValid) {
     issues.push("EXPO_PUBLIC_RECEIPT_SCAN_API_URL must start with https://");
   }
+  if (health.production && health.receiptScanApiUrlUsesPreviewHost) {
+    issues.push("EXPO_PUBLIC_RECEIPT_SCAN_API_URL must not point at the preview Netlify host");
+  }
   if (health.production && !health.stationsApiUrlPresent) {
     issues.push("EXPO_PUBLIC_STATIONS_API_URL is missing");
   }
   if (health.stationsApiUrlPresent && !health.stationsApiUrlLooksValid) {
     issues.push("EXPO_PUBLIC_STATIONS_API_URL must start with https://");
   }
+  if (health.production && health.stationsApiUrlUsesPreviewHost) {
+    issues.push("EXPO_PUBLIC_STATIONS_API_URL must not point at the preview Netlify host");
+  }
   if (health.production && !health.accountDeleteApiUrlPresent) {
     issues.push("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL is missing");
   }
   if (health.accountDeleteApiUrlPresent && !health.accountDeleteApiUrlLooksValid) {
     issues.push("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must start with https://");
+  }
+  if (health.production && health.accountDeleteApiUrlUsesPreviewHost) {
+    issues.push("EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must not point at the preview Netlify host");
   }
   if (health.production && !health.revenueCatIosKeyPresent) {
     issues.push("EXPO_PUBLIC_REVENUECAT_IOS_KEY is missing");

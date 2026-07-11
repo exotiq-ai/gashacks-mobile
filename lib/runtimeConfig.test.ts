@@ -97,4 +97,34 @@ describe("runtime config", () => {
       ]),
     );
   });
+
+  it("rejects preview API hosts for production releases", () => {
+    vi.stubEnv("EXPO_PUBLIC_APP_ENV", "production");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_URL", "https://feicgarueqllkpzgewul.supabase.co");
+    vi.stubEnv("EXPO_PUBLIC_SUPABASE_ANON_KEY", "sb_publishable_test");
+    vi.stubEnv("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID", "client.apps.googleusercontent.com");
+    vi.stubEnv(
+      "EXPO_PUBLIC_RECEIPT_SCAN_API_URL",
+      "https://gashacks-mobile-preview.netlify.app/.netlify/functions/receipt-scan",
+    );
+    vi.stubEnv(
+      "EXPO_PUBLIC_STATIONS_API_URL",
+      "https://gashacks-mobile-preview.netlify.app/.netlify/functions/stations",
+    );
+    vi.stubEnv(
+      "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL",
+      "https://gashacks-mobile-preview.netlify.app/.netlify/functions/delete-account",
+    );
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_IOS_KEY", "appl_test");
+    vi.stubEnv("EXPO_PUBLIC_REVENUECAT_ANDROID_KEY", "goog_test");
+
+    expect(getConfigHealth().ok).toBe(false);
+    expect(getConfigIssues()).toEqual(
+      expect.arrayContaining([
+        "EXPO_PUBLIC_RECEIPT_SCAN_API_URL must not point at the preview Netlify host",
+        "EXPO_PUBLIC_STATIONS_API_URL must not point at the preview Netlify host",
+        "EXPO_PUBLIC_ACCOUNT_DELETE_API_URL must not point at the preview Netlify host",
+      ]),
+    );
+  });
 });
