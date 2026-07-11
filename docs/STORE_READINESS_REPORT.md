@@ -12,7 +12,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Unit, config, and Netlify function tests pass: `npm test` (48 tests)
 - Expo SDK health passes: `npx expo-doctor`
 - Web export succeeds: `npx expo export -p web`
-- E2E smoke tests pass: `npm run test:e2e`
+- E2E smoke tests pass: `npm run test:e2e` (7 Playwright mobile-web tests)
 - Combined local release gate passes: `npm run verify:release`
 - EAS archive inspection succeeds for iOS simulator and Android preview profiles.
 - EAS Android preview pre-build inspection succeeds.
@@ -68,6 +68,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Improved station finder recovery when location permission is blocked by clearing stale results, showing manual-search guidance, focusing the city/ZIP input, and adding E2E coverage.
 - Preserved receipt scan details in saved fill logs, including station name, address notes, and total cost.
 - Fixed client and Netlify receipt parsers so blank numeric receipt fields remain empty instead of becoming zeroes.
+- Added Playwright E2E coverage for manual receipt logging from Calculator through Fill Logs, including station name and total cost display.
 - Aligned the default RevenueCat entitlement ID and env examples to `pro`, matching store metadata and RevenueCat config tests.
 - Aligned Netlify preview RevenueCat entitlement config to `pro` and added regression coverage so previews do not drift from RevenueCat/store metadata.
 - Gated Apple Sign In display by platform/runtime availability so unsupported Android/web surfaces do not show a dead Apple login button.
@@ -133,4 +134,4 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 - Local iOS tooling now has Homebrew `fastlane` and CocoaPods installed, and iOS pods install after removing the unused native Google Sign-In SDK.
 - Local iOS EAS pre-build is still blocked by toolchain compatibility: the usable Intel Xcode here is 16.4, while Expo SDK 55 reports it requires Xcode 26+. The downloaded `Xcode.app` appears incompatible with this CPU, while `Xcode 2.app` runs but is too old for SDK 55.
 - Local npm audit still reports 10 moderate `uuid` findings through Expo tooling. `npm audit fix --force` would downgrade Expo to 46, so this needs Expo/upstream review instead of the forced fix.
-- The Playwright E2E suite covers web smoke flows only. Native behavior still needs simulator/device validation.
+- The Playwright E2E suite covers 7 web smoke flows only, including manual receipt logging. Native camera/photo picker, billing, Apple Sign In, and device permission behavior still need simulator/device validation.

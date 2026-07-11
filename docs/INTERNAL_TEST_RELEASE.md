@@ -105,6 +105,7 @@ npm run submit:preview:android
   - Input validation
   - Save blend configuration
   - Receipt scan/manual entry preserves station name and total cost in Fill Logs
+  - Manual receipt logging can be completed from Calculator and appears in Fill Logs
   - Receipt fields expose clear screen-reader labels
 - Logs:
   - New saved blend appears in list
