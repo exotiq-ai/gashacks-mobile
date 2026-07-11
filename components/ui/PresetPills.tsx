@@ -38,6 +38,9 @@ export function PresetPills({ activeTarget, onSelect }: Props) {
         return (
           <Pressable
             key={preset.label}
+            accessibilityRole="button"
+            accessibilityLabel={`${preset.label} preset, E${preset.targetEthanol}`}
+            accessibilityState={{ selected: isActive }}
             style={[styles.pill, isActive && styles.pillActive]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

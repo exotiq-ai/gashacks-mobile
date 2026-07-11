@@ -111,7 +111,12 @@ export function ShareBlendCard(props: ShareBlendCardProps) {
         <BlendCardContent {...props} />
       </ViewShot>
 
-      <TouchableOpacity style={styles.shareButton} onPress={() => void handleShare()}>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Share blend"
+        style={styles.shareButton}
+        onPress={() => void handleShare()}
+      >
         <MaterialCommunityIcons name="share-variant" size={18} color={colors.background.primary} />
         <GHText style={styles.shareLabel}>Share Blend</GHText>
       </TouchableOpacity>
