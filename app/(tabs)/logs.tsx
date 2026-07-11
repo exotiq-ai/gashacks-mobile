@@ -147,6 +147,9 @@ export default function LogsScreen() {
           return (
             <Pressable
               key={f.value}
+              accessibilityRole="button"
+              accessibilityLabel={`Show ${f.label} fill logs`}
+              accessibilityState={{ selected: isActive }}
               style={[styles.filterPill, isActive && styles.filterPillActive]}
               onPress={() => {
                 setFilter(f.value);

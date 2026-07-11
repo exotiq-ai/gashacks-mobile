@@ -180,7 +180,12 @@ export default function GarageScreen() {
           const isActive = v.id === activeVehicleId;
           return (
             <Animated.View key={v.id} entering={FadeInDown.duration(300)}>
-              <Pressable onPress={() => handleActivate(v.id)}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Set ${v.year ?? ""} ${v.make} ${v.model} as active vehicle`.trim()}
+                accessibilityState={{ selected: isActive }}
+                onPress={() => handleActivate(v.id)}
+              >
                 <GHCard style={[styles.vehicleCard, isActive && styles.vehicleCardActive]}>
                   <View style={styles.vehicleHeader}>
                     <View style={{ flex: 1 }}>
@@ -228,6 +233,9 @@ export default function GarageScreen() {
           {/* Mode toggle */}
           <View style={styles.modeToggle}>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Use vehicle picker"
+              accessibilityState={{ selected: addMode === "pick" }}
               style={[styles.modeBtn, addMode === "pick" && styles.modeBtnActive]}
               onPress={() => setAddMode("pick")}
             >
@@ -236,6 +244,9 @@ export default function GarageScreen() {
               </GHText>
             </Pressable>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Use manual vehicle entry"
+              accessibilityState={{ selected: addMode === "manual" }}
               style={[styles.modeBtn, addMode === "manual" && styles.modeBtnActive]}
               onPress={() => setAddMode("manual")}
             >
@@ -259,6 +270,9 @@ export default function GarageScreen() {
                 {MAKES.map((m) => (
                   <Pressable
                     key={m}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${m}`}
+                    accessibilityState={{ selected: selectedMake === m }}
                     style={[styles.pill, selectedMake === m && styles.pillActive]}
                     onPress={() => {
                       setSelectedMake(m);
@@ -287,6 +301,9 @@ export default function GarageScreen() {
                     return (
                       <Pressable
                         key={t.model}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select ${t.make} ${t.model}, ${t.tankGallons} gallon tank`}
+                        accessibilityState={{ selected: isSel }}
                         style={[styles.modelRow, isSel && styles.modelRowActive]}
                         onPress={() => {
                           setSelectedTemplate(t);

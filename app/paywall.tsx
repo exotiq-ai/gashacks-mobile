@@ -149,6 +149,9 @@ export default function PaywallScreen() {
         {/* Plan Toggle */}
         <View style={styles.planToggle}>
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Select monthly plan"
+            accessibilityState={{ selected: plan === "monthly" }}
             style={[styles.planOption, plan === "monthly" && styles.planOptionActive]}
             onPress={() => {
               setPlan("monthly");
@@ -164,6 +167,9 @@ export default function PaywallScreen() {
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Select annual plan"
+            accessibilityState={{ selected: plan === "annual" }}
             style={[styles.planOption, plan === "annual" && styles.planOptionActive]}
             onPress={() => {
               setPlan("annual");

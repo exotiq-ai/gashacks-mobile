@@ -179,6 +179,9 @@ export default function StationsScreen() {
           {RADIUS_OPTIONS.map((r) => (
             <Pressable
               key={r}
+              accessibilityRole="button"
+              accessibilityLabel={`Search within ${r} miles`}
+              accessibilityState={{ selected: radiusMiles === r }}
               style={[styles.radiusPill, radiusMiles === r && styles.radiusPillActive]}
               onPress={() => {
                 setRadiusMiles(r);
@@ -267,7 +270,11 @@ export default function StationsScreen() {
 
       {visibleStations.map((station, idx) => (
         <Animated.View key={station.id} entering={FadeInDown.duration(300).delay(idx * 60)}>
-          <Pressable onPress={() => handleNavigate(station)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Navigate to ${station.name}`}
+            onPress={() => handleNavigate(station)}
+          >
             <GHCard style={styles.stationCard}>
               <View style={styles.stationHeader}>
                 <View style={styles.stationNameRow}>
