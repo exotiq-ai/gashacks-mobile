@@ -35,6 +35,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: "com.exotiq.gashacks",
+    blockedPermissions: [
+      "android.permission.ACCESS_BACKGROUND_LOCATION",
+      "android.permission.RECORD_AUDIO",
+    ],
     adaptiveIcon: {
       foregroundImage: "./assets/images/android-icon-foreground.png",
       backgroundImage: "./assets/images/android-icon-background.png",
