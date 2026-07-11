@@ -83,6 +83,10 @@ npm run submit:preview:android
 
 ## 6) Internal QA smoke checklist
 
+- Store console prep:
+  - Review `docs/STORE_SUBMISSION_METADATA.md`
+  - Replace all `TBD` store metadata values before production submission
+  - Confirm public privacy, terms, support, and marketing URLs
 - Auth:
   - Email sign up/login
   - Google sign in

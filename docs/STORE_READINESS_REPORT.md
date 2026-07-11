@@ -84,6 +84,7 @@ Gas Hacks mobile is closer to internal TestFlight and Play internal-track readin
 
 - App Store Connect app exists for bundle ID `com.exotiq.gashacks`.
 - Google Play Console app exists for package `com.exotiq.gashacks`.
+- Store submission metadata packet is reviewed: `docs/STORE_SUBMISSION_METADATA.md`.
 - Subscription group, monthly product, annual product, localized descriptions, pricing, and review screenshot are configured.
 - Privacy policy URL, terms URL, support URL/email, and privacy nutrition answers are ready.
 - App icons, screenshots, preview assets, category, age rating, and subscription metadata are ready.

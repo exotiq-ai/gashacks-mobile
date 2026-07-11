@@ -2,6 +2,7 @@ import { colors, spacing, typography } from "@/constants/theme";
 import * as Haptics from "expo-haptics";
 import { useCallback, useRef } from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   TextInput,
@@ -192,10 +193,17 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     backgroundColor: colors.accent.lime,
     marginLeft: -11,
-    shadowColor: colors.accent.lime,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 4,
+    ...Platform.select({
+      web: {
+        boxShadow: `0 0 6px ${colors.accent.lime}`,
+      },
+      default: {
+        shadowColor: colors.accent.lime,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+        elevation: 4,
+      },
+    }),
   },
 });
